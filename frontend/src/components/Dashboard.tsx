@@ -184,6 +184,7 @@ export function Dashboard() {
 
         {showAddForm && (
           <TaskForm
+            members={members}
             onSubmit={handleAddTask}
             onCancel={() => setShowAddForm(false)}
           />
@@ -192,6 +193,7 @@ export function Dashboard() {
         {editingTask && (
           <TaskForm
             task={editingTask}
+            members={members}
             onSubmit={handleUpdateTask}
             onCancel={() => setEditingTask(null)}
           />

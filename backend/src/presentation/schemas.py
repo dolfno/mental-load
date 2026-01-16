@@ -16,14 +16,19 @@ class TaskCreateRequest(BaseModel):
     recurrence: RecurrencePatternSchema
     urgency_label: Urgency | None = None
     next_due: date | None = None
+    assigned_to_id: int | None = None
 
 
 class TaskUpdateRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+
     name: str | None = None
     recurrence: RecurrencePatternSchema | None = None
     urgency_label: Urgency | None = None
     next_due: date | None = None
     is_active: bool | None = None
+    assigned_to_id: int | None = None
+    # Use model_fields_set to check if assigned_to_id was explicitly provided
 
 
 class TaskResponse(BaseModel):
@@ -35,6 +40,8 @@ class TaskResponse(BaseModel):
     last_completed: datetime | None
     next_due: date | None
     is_active: bool
+    assigned_to_id: int | None
+    assigned_to_name: str | None
 
 
 class CompleteTaskRequest(BaseModel):

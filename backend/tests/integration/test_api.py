@@ -33,7 +33,8 @@ def test_db():
                 urgency_label TEXT,
                 last_completed TIMESTAMP,
                 next_due DATE,
-                is_active BOOLEAN DEFAULT 1
+                is_active BOOLEAN DEFAULT 1,
+                assigned_to_id INTEGER REFERENCES household_members(id)
             )
         """)
         conn.execute("""
@@ -47,7 +48,7 @@ def test_db():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 task_id INTEGER NOT NULL REFERENCES tasks(id),
                 completed_at TIMESTAMP NOT NULL,
-                completed_by_id INTEGER NOT NULL REFERENCES household_members(id)
+                completed_by_id INTEGER REFERENCES household_members(id)
             )
         """)
 

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import type { Task, TaskCreateRequest, TaskUpdateRequest, RecurrenceType, Urgency, TimeOfDay } from '../types';
+import type { Task, TaskCreateRequest, TaskUpdateRequest, RecurrenceType, Urgency, TimeOfDay, Member } from '../types';
 
 interface TaskFormProps {
   task?: Task;  // If provided, form is in edit mode
+  members?: Member[];
   onSubmit: (data: TaskCreateRequest | TaskUpdateRequest) => void;
   onCancel: () => void;
 }
@@ -19,7 +20,7 @@ const recurrenceTypes: { value: RecurrenceType; label: string }[] = [
 
 const dayNames = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
 
-export function TaskForm({ task, onSubmit, onCancel }: TaskFormProps) {
+export function TaskForm({ task, members = [], onSubmit, onCancel }: TaskFormProps) {
   const isEditMode = !!task;
 
   const [name, setName] = useState(task?.name ?? '');
@@ -28,6 +29,7 @@ export function TaskForm({ task, onSubmit, onCancel }: TaskFormProps) {
   const [selectedDays, setSelectedDays] = useState<number[]>(task?.recurrence.days ?? []);
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay | ''>(task?.recurrence.time_of_day ?? '');
   const [urgency, setUrgency] = useState<Urgency | ''>(task?.urgency_label ?? '');
+  const [assignedToId, setAssignedToId] = useState<number | ''>(task?.assigned_to_id ?? '');
 
   useEffect(() => {
     if (task) {
@@ -37,6 +39,7 @@ export function TaskForm({ task, onSubmit, onCancel }: TaskFormProps) {
       setSelectedDays(task.recurrence.days ?? []);
       setTimeOfDay(task.recurrence.time_of_day ?? '');
       setUrgency(task.urgency_label ?? '');
+      setAssignedToId(task.assigned_to_id ?? '');
     }
   }, [task]);
 
@@ -53,6 +56,7 @@ export function TaskForm({ task, onSubmit, onCancel }: TaskFormProps) {
         time_of_day: timeOfDay || null,
       },
       urgency_label: urgency || null,
+      assigned_to_id: assignedToId || null,
     };
 
     onSubmit(data);
@@ -159,6 +163,22 @@ export function TaskForm({ task, onSubmit, onCancel }: TaskFormProps) {
           <option value="low">Laag</option>
         </select>
       </div>
+
+      {members.length > 0 && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Toegewezen aan</label>
+          <select
+            value={assignedToId}
+            onChange={e => setAssignedToId(e.target.value ? parseInt(e.target.value) : '')}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Niet toegewezen</option>
+            {members.map(member => (
+              <option key={member.id} value={member.id}>{member.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div className="flex gap-3 pt-2">
         <button

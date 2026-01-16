@@ -27,6 +27,8 @@ export interface Task {
   last_completed: string | null;
   next_due: string | null;
   is_active: boolean;
+  assigned_to_id: number | null;
+  assigned_to_name: string | null;
 }
 
 export interface TaskCreateRequest {
@@ -34,6 +36,7 @@ export interface TaskCreateRequest {
   recurrence: RecurrencePattern;
   urgency_label?: Urgency | null;
   next_due?: string | null;
+  assigned_to_id?: number | null;
 }
 
 export interface TaskUpdateRequest {
@@ -42,6 +45,7 @@ export interface TaskUpdateRequest {
   urgency_label?: Urgency | null;
   next_due?: string | null;
   is_active?: boolean;
+  assigned_to_id?: number | null;
 }
 
 export interface Member {

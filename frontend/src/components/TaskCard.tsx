@@ -124,6 +124,13 @@ export function TaskCard({ task, onComplete, onPostpone, onEdit, onDelete }: Tas
       <div className="text-sm opacity-75 mb-3">
         <div>{formatRecurrence(task)}</div>
         {task.next_due && <div className="font-medium">{formatDueDate(task.next_due)}</div>}
+        {task.assigned_to_name && (
+          <div className="mt-1">
+            <span className="inline-block px-2 py-0.5 bg-purple-500 text-white rounded text-xs font-medium">
+              {task.assigned_to_name}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="flex gap-2 items-center">
