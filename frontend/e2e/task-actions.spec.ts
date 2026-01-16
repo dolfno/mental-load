@@ -97,4 +97,59 @@ test.describe('Task Actions', () => {
       expect(dueText).toBe('Morgen');
     }
   });
+
+  test('verwijderen deletes task after confirmation', async ({ page }) => {
+    // Find the first task card
+    const taskCard = page.locator('[data-testid="task-card"]').first();
+
+    // Skip if no tasks exist
+    if (await taskCard.count() === 0) {
+      test.skip();
+      return;
+    }
+
+    // Get the task name and count before deleting
+    const taskName = await taskCard.locator('h3').textContent();
+    const initialTaskCount = await page.locator('[data-testid="task-card"]').count();
+
+    // Click the overflow menu (⋮)
+    const overflowButton = taskCard.getByRole('button', { name: '⋮' });
+    await expect(overflowButton).toBeVisible();
+    await overflowButton.click();
+
+    // Click "Verwijderen" in the dropdown (red text option)
+    const verwijderenOption = page.locator('button.text-red-600:has-text("Verwijderen")');
+    await expect(verwijderenOption).toBeVisible();
+    await verwijderenOption.click();
+
+    // Confirmation dialog should appear - the confirm button has red background
+    const confirmButton = taskCard.locator('button.bg-red-500:has-text("Verwijderen")');
+    await expect(confirmButton).toBeVisible();
+
+    // Listen for DELETE and subsequent GET request
+    const deletePromise = page.waitForResponse(
+      response => response.url().includes('/api/tasks/') &&
+                  response.request().method() === 'DELETE'
+    );
+    const getPromise = page.waitForResponse(
+      response => response.url().endsWith('/api/tasks') &&
+                  response.request().method() === 'GET'
+    );
+
+    // Confirm deletion
+    await confirmButton.click();
+
+    // Wait for both requests
+    const deleteResponse = await deletePromise;
+    expect(deleteResponse.status()).toBe(204);
+    await getPromise;
+
+    // Verify the task is no longer visible
+    const deletedTaskCard = page.locator('[data-testid="task-card"]').filter({ hasText: taskName! });
+    await expect(deletedTaskCard).toHaveCount(0);
+
+    // Verify task count decreased
+    const newTaskCount = await page.locator('[data-testid="task-card"]').count();
+    expect(newTaskCount).toBe(initialTaskCount - 1);
+  });
 });
