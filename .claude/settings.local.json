@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(uv: *)",
+      "Bash(timeout 5 uv run:*)",
+      "Bash(uv run python:*)",
+      "Bash(uv run pytest:*)",
+      "Bash(npm create:*)"
+    ]
+  }
+}

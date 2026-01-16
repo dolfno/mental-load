@@ -1,0 +1,29 @@
+from dataclasses import dataclass
+from datetime import datetime, date
+
+from .value_objects import RecurrencePattern, Urgency
+
+
+@dataclass
+class Task:
+    id: int | None
+    name: str
+    recurrence: RecurrencePattern
+    urgency_label: Urgency | None = None  # manual override
+    last_completed: datetime | None = None
+    next_due: date | None = None
+    is_active: bool = True
+
+
+@dataclass
+class HouseholdMember:
+    id: int | None
+    name: str
+
+
+@dataclass
+class TaskCompletion:
+    id: int | None
+    task_id: int
+    completed_at: datetime
+    completed_by_id: int
