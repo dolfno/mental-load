@@ -9,7 +9,7 @@ class RecurrenceType(str, Enum):
     MONTHLY = "monthly"
     QUARTERLY = "quarterly"
     YEARLY = "yearly"
-    CONTINUOUS = "continuous"
+    EENMALIG = "eenmalig"  # One-time task, deactivated after completion
 
 
 class Urgency(str, Enum):

@@ -5,6 +5,7 @@ from src.domain import (
     Task,
     TaskCompletion,
     RecurrencePattern,
+    RecurrenceType,
     Urgency,
     calculate_urgency,
     calculate_next_due,
@@ -98,6 +99,11 @@ class CompleteTask:
         # Update task with completion info and next due date
         task.last_completed = completed_at
         task.next_due = calculate_next_due(task, completed_at)
+
+        # Deactivate one-time tasks after completion
+        if task.recurrence.type == RecurrenceType.EENMALIG:
+            task.is_active = False
+
         saved_task = self.task_repo.save(task)
 
         return saved_task, saved_completion

@@ -62,11 +62,11 @@ class TestCalculateUrgency:
         )
         assert calculate_urgency(task) == Urgency.LOW
 
-    def test_continuous_task_is_low_urgency(self):
+    def test_eenmalig_task_is_low_urgency(self):
         task = Task(
             id=1,
             name="Test",
-            recurrence=RecurrencePattern(type=RecurrenceType.CONTINUOUS),
+            recurrence=RecurrencePattern(type=RecurrenceType.EENMALIG),
         )
         assert calculate_urgency(task) == Urgency.LOW
 
@@ -151,11 +151,11 @@ class TestCalculateNextDue:
         next_due = calculate_next_due(task, completed_at)
         assert next_due == date(2025, 1, 15)
 
-    def test_continuous_returns_none(self):
+    def test_eenmalig_returns_none(self):
         task = Task(
             id=1,
             name="Test",
-            recurrence=RecurrencePattern(type=RecurrenceType.CONTINUOUS),
+            recurrence=RecurrencePattern(type=RecurrenceType.EENMALIG),
         )
         completed_at = datetime(2024, 1, 15, 10, 0)
         next_due = calculate_next_due(task, completed_at)

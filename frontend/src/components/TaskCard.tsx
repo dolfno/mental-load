@@ -49,8 +49,8 @@ function formatRecurrence(task: Task): string {
     case 'yearly':
       text = interval === 1 ? 'Jaarlijks' : `${interval}x per jaar`;
       break;
-    case 'continuous':
-      text = 'Doorlopend';
+    case 'eenmalig':
+      text = 'Eenmalig';
       break;
   }
 

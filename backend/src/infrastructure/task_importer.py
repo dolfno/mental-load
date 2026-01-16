@@ -14,9 +14,9 @@ def parse_recurrence(recurrence_str: str) -> RecurrencePattern | None:
 
     s = recurrence_str.strip().lower()
 
-    # Continuous
-    if s == "continu":
-        return RecurrencePattern(type=RecurrenceType.CONTINUOUS)
+    # One-time (eenmalig)
+    if s in ("eenmalig", "eenmalige"):
+        return RecurrencePattern(type=RecurrenceType.EENMALIG)
 
     # Daily with time of day
     if s == "elke ochtend":
@@ -172,8 +172,8 @@ def import_tasks(filepath: str, db_path: str = "aivin.db") -> int:
             continue
 
         if recurrence is None:
-            # Default to continuous for tasks without recurrence
-            recurrence = RecurrencePattern(type=RecurrenceType.CONTINUOUS)
+            # Default to weekly for tasks without recurrence
+            recurrence = RecurrencePattern(type=RecurrenceType.WEEKLY)
 
         task = Task(
             id=None,

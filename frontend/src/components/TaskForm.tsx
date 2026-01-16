@@ -14,7 +14,7 @@ const recurrenceTypes: { value: RecurrenceType; label: string }[] = [
   { value: 'monthly', label: 'Maandelijks' },
   { value: 'quarterly', label: 'Per kwartaal' },
   { value: 'yearly', label: 'Jaarlijks' },
-  { value: 'continuous', label: 'Doorlopend' },
+  { value: 'eenmalig', label: 'Eenmalig' },
 ];
 
 const dayNames = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];

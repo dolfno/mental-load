@@ -14,8 +14,8 @@ def calculate_urgency(task: Task, today: date | None = None) -> Urgency:
     if task.urgency_label == Urgency.HIGH:
         return Urgency.HIGH
 
-    # Continuous tasks are always low urgency (they're always visible)
-    if task.recurrence.type == RecurrenceType.CONTINUOUS:
+    # One-time tasks use label or default to low
+    if task.recurrence.type == RecurrenceType.EENMALIG:
         return task.urgency_label or Urgency.LOW
 
     # No due date - use label or default to low
@@ -48,8 +48,8 @@ def calculate_next_due(task: Task, completed_at: datetime | None = None) -> date
     recurrence = task.recurrence
     base_date = completed_at.date()
 
-    if recurrence.type == RecurrenceType.CONTINUOUS:
-        return None
+    if recurrence.type == RecurrenceType.EENMALIG:
+        return None  # One-time task, no next occurrence
 
     if recurrence.type == RecurrenceType.DAILY:
         return base_date + timedelta(days=recurrence.interval)

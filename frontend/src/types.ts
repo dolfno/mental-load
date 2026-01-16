@@ -5,7 +5,7 @@ export type RecurrenceType =
   | 'monthly'
   | 'quarterly'
   | 'yearly'
-  | 'continuous';
+  | 'eenmalig';
 
 export type Urgency = 'high' | 'medium' | 'low';
 
