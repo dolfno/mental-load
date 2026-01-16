@@ -5,6 +5,8 @@ import tempfile
 from datetime import date
 
 import pytest
+from alembic.config import Config
+from alembic import command
 from fastapi.testclient import TestClient
 
 from src.infrastructure import Database, set_database
@@ -13,45 +15,17 @@ from src.presentation.main import app
 
 @pytest.fixture
 def test_db():
-    """Create a temporary test database."""
+    """Create a temporary test database with actual migrations."""
     fd, path = tempfile.mkstemp(suffix=".db")
     os.close(fd)
 
+    # Run actual alembic migrations
+    alembic_cfg = Config("alembic.ini")
+    alembic_cfg.set_main_option("sqlalchemy.url", f"sqlite:///{path}")
+    command.upgrade(alembic_cfg, "head")
+
     db = Database(path)
     set_database(db)
-
-    # Run migrations
-    with db.get_connection() as conn:
-        conn.execute("""
-            CREATE TABLE tasks (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                recurrence_type TEXT NOT NULL,
-                recurrence_days TEXT,
-                recurrence_interval INTEGER DEFAULT 1,
-                time_of_day TEXT,
-                urgency_label TEXT,
-                last_completed TIMESTAMP,
-                next_due DATE,
-                is_active BOOLEAN DEFAULT 1,
-                assigned_to_id INTEGER REFERENCES household_members(id),
-                autocomplete BOOLEAN DEFAULT 0
-            )
-        """)
-        conn.execute("""
-            CREATE TABLE household_members (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL UNIQUE
-            )
-        """)
-        conn.execute("""
-            CREATE TABLE task_completions (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                task_id INTEGER NOT NULL REFERENCES tasks(id),
-                completed_at TIMESTAMP NOT NULL,
-                completed_by_id INTEGER REFERENCES household_members(id)
-            )
-        """)
 
     yield db
 
