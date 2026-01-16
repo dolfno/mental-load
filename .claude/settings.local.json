@@ -5,7 +5,11 @@
       "Bash(timeout 5 uv run:*)",
       "Bash(uv run python:*)",
       "Bash(uv run pytest:*)",
-      "Bash(npm create:*)"
+      "Bash(npm create:*)",
+      "Bash(npm run build:*)",
+      "Bash(git add:*)",
+      "Bash(git rm:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
