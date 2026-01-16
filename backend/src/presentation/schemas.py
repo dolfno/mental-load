@@ -17,6 +17,7 @@ class TaskCreateRequest(BaseModel):
     urgency_label: Urgency | None = None
     next_due: date | None = None
     assigned_to_id: int | None = None
+    autocomplete: bool = False
 
 
 class TaskUpdateRequest(BaseModel):
@@ -29,6 +30,7 @@ class TaskUpdateRequest(BaseModel):
     is_active: bool | None = None
     assigned_to_id: int | None = None
     # Use model_fields_set to check if assigned_to_id was explicitly provided
+    autocomplete: bool | None = None
 
 
 class TaskResponse(BaseModel):
@@ -42,6 +44,7 @@ class TaskResponse(BaseModel):
     is_active: bool
     assigned_to_id: int | None
     assigned_to_name: str | None
+    autocomplete: bool
 
 
 class CompleteTaskRequest(BaseModel):

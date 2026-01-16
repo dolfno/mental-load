@@ -30,6 +30,7 @@ class CreateTask:
         urgency_label: Urgency | None = None,
         next_due: date | None = None,
         assigned_to_id: int | None = None,
+        autocomplete: bool = False,
     ) -> Task:
         task = Task(
             id=None,
@@ -38,6 +39,7 @@ class CreateTask:
             urgency_label=urgency_label,
             next_due=next_due,
             assigned_to_id=assigned_to_id,
+            autocomplete=autocomplete,
         )
         return self.task_repo.save(task)
 
@@ -55,6 +57,7 @@ class UpdateTask:
         next_due: date | None = None,
         is_active: bool | None = None,
         assigned_to_id: int | None = ...,
+        autocomplete: bool | None = None,
     ) -> Task | None:
         task = self.task_repo.get_by_id(task_id)
         if task is None:
@@ -72,6 +75,8 @@ class UpdateTask:
             task.is_active = is_active
         if assigned_to_id is not ...:
             task.assigned_to_id = assigned_to_id
+        if autocomplete is not None:
+            task.autocomplete = autocomplete
 
         return self.task_repo.save(task)
 

@@ -14,6 +14,7 @@ class Task:
     next_due: date | None = None
     is_active: bool = True
     assigned_to_id: int | None = None
+    autocomplete: bool = False
 
 
 @dataclass

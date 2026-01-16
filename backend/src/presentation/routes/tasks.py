@@ -70,6 +70,7 @@ def task_with_urgency_to_response(
         is_active=task.is_active,
         assigned_to_id=task.assigned_to_id,
         assigned_to_name=assigned_to_name,
+        autocomplete=task.autocomplete,
     )
 
 
@@ -79,8 +80,18 @@ def list_tasks(
     task_repo: SQLiteTaskRepository = Depends(get_task_repo),
     member_repo: SQLiteMemberRepository = Depends(get_member_repo),
 ):
+    from src.domain import auto_advance_due_date
+
     use_case = GetAllTasks(task_repo)
     tasks = use_case.execute(active_only=active_only)
+
+    # Auto-advance overdue autocomplete tasks
+    for twu in tasks:
+        new_due = auto_advance_due_date(twu.task)
+        if new_due:
+            twu.task.next_due = new_due
+            task_repo.save(twu.task)
+
     return [task_with_urgency_to_response(t, member_repo) for t in tasks]
 
 
@@ -125,6 +136,7 @@ def create_task(
         urgency_label=request.urgency_label,
         next_due=request.next_due,
         assigned_to_id=request.assigned_to_id,
+        autocomplete=request.autocomplete,
     )
 
     from src.domain import calculate_urgency
@@ -162,6 +174,7 @@ def update_task(
         next_due=request.next_due,
         is_active=request.is_active,
         assigned_to_id=assigned_to_id,
+        autocomplete=request.autocomplete,
     )
 
     if task is None:

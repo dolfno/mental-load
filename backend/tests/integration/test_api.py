@@ -34,7 +34,8 @@ def test_db():
                 last_completed TIMESTAMP,
                 next_due DATE,
                 is_active BOOLEAN DEFAULT 1,
-                assigned_to_id INTEGER REFERENCES household_members(id)
+                assigned_to_id INTEGER REFERENCES household_members(id),
+                autocomplete BOOLEAN DEFAULT 0
             )
         """)
         conn.execute("""
