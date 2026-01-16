@@ -36,6 +36,14 @@ export interface TaskCreateRequest {
   next_due?: string | null;
 }
 
+export interface TaskUpdateRequest {
+  name?: string;
+  recurrence?: RecurrencePattern;
+  urgency_label?: Urgency | null;
+  next_due?: string | null;
+  is_active?: boolean;
+}
+
 export interface Member {
   id: number;
   name: string;

@@ -26,4 +26,4 @@ class TaskCompletion:
     id: int | None
     task_id: int
     completed_at: datetime
-    completed_by_id: int
+    completed_by_id: int | None = None

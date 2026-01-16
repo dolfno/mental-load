@@ -38,7 +38,7 @@ class TaskResponse(BaseModel):
 
 
 class CompleteTaskRequest(BaseModel):
-    member_id: int
+    member_id: int | None = None
 
 
 class MemberCreateRequest(BaseModel):
@@ -55,5 +55,5 @@ class TaskCompletionResponse(BaseModel):
     task_id: int
     task_name: str | None = None
     completed_at: datetime
-    completed_by_id: int
+    completed_by_id: int | None = None
     completed_by_name: str | None = None

@@ -79,7 +79,7 @@ class CompleteTask:
         self.task_repo = task_repo
         self.completion_repo = completion_repo
 
-    def execute(self, task_id: int, member_id: int) -> tuple[Task, TaskCompletion] | None:
+    def execute(self, task_id: int, member_id: int | None = None) -> tuple[Task, TaskCompletion] | None:
         task = self.task_repo.get_by_id(task_id)
         if task is None:
             return None

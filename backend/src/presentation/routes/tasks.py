@@ -146,12 +146,13 @@ def update_task(
 @router.post("/{task_id}/complete", response_model=TaskResponse)
 def complete_task(
     task_id: int,
-    request: CompleteTaskRequest,
+    request: CompleteTaskRequest | None = None,
     task_repo: SQLiteTaskRepository = Depends(get_task_repo),
     completion_repo: SQLiteCompletionRepository = Depends(get_completion_repo),
 ):
     use_case = CompleteTask(task_repo, completion_repo)
-    result = use_case.execute(task_id=task_id, member_id=request.member_id)
+    member_id = request.member_id if request else None
+    result = use_case.execute(task_id=task_id, member_id=member_id)
 
     if result is None:
         raise HTTPException(status_code=404, detail="Task not found")

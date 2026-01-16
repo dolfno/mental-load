@@ -1,4 +1,4 @@
-import type { Task, TaskCreateRequest, Member, TaskCompletion } from './types';
+import type { Task, TaskCreateRequest, TaskUpdateRequest, Member, TaskCompletion } from './types';
 
 const BASE_URL = '/api';
 
@@ -30,10 +30,22 @@ export const api = {
         body: JSON.stringify(data),
       }),
 
-    complete: (taskId: number, memberId: number) =>
+    complete: (taskId: number) =>
       fetchJSON<Task>(`${BASE_URL}/tasks/${taskId}/complete`, {
         method: 'POST',
-        body: JSON.stringify({ member_id: memberId }),
+        body: JSON.stringify({}),
+      }),
+
+    update: (taskId: number, data: TaskUpdateRequest) =>
+      fetchJSON<Task>(`${BASE_URL}/tasks/${taskId}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }),
+
+    postpone: (taskId: number, newDueDate: string) =>
+      fetchJSON<Task>(`${BASE_URL}/tasks/${taskId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ next_due: newDueDate }),
       }),
 
     delete: (taskId: number) =>

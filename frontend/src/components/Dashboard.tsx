@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { Task, Member, TaskCreateRequest } from '../types';
+import type { Task, Member, TaskCreateRequest, TaskUpdateRequest } from '../types';
 import { api } from '../api';
 import { TaskList } from './TaskList';
-import { AddTaskForm } from './AddTaskForm';
+import { TaskForm } from './TaskForm';
 import { MemberSelector } from './MemberSelector';
 
 type ViewMode = 'all' | 'urgent' | 'upcoming';
@@ -14,6 +14,7 @@ export function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('all');
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   const loadTasks = useCallback(async () => {
     try {
@@ -53,9 +54,9 @@ export function Dashboard() {
     init();
   }, [loadTasks, loadMembers]);
 
-  const handleComplete = async (taskId: number, memberId: number) => {
+  const handleComplete = async (taskId: number) => {
     try {
-      await api.tasks.complete(taskId, memberId);
+      await api.tasks.complete(taskId);
       await loadTasks();
     } catch (err) {
       setError('Kan taak niet voltooien');
@@ -63,13 +64,50 @@ export function Dashboard() {
     }
   };
 
-  const handleAddTask = async (task: TaskCreateRequest) => {
+  const handlePostpone = async (taskId: number, newDueDate: string) => {
     try {
-      await api.tasks.create(task);
+      await api.tasks.postpone(taskId, newDueDate);
+      await loadTasks();
+    } catch (err) {
+      setError('Kan taak niet uitstellen');
+      console.error(err);
+    }
+  };
+
+  const handleEdit = (task: Task) => {
+    setEditingTask(task);
+    setShowAddForm(false);
+  };
+
+  const handleDelete = async (taskId: number) => {
+    try {
+      await api.tasks.delete(taskId);
+      await loadTasks();
+    } catch (err) {
+      setError('Kan taak niet verwijderen');
+      console.error(err);
+    }
+  };
+
+  const handleAddTask = async (data: TaskCreateRequest | TaskUpdateRequest) => {
+    try {
+      await api.tasks.create(data as TaskCreateRequest);
       await loadTasks();
       setShowAddForm(false);
     } catch (err) {
       setError('Kan taak niet toevoegen');
+      console.error(err);
+    }
+  };
+
+  const handleUpdateTask = async (data: TaskCreateRequest | TaskUpdateRequest) => {
+    if (!editingTask) return;
+    try {
+      await api.tasks.update(editingTask.id, data as TaskUpdateRequest);
+      await loadTasks();
+      setEditingTask(null);
+    } catch (err) {
+      setError('Kan taak niet bijwerken');
       console.error(err);
     }
   };
@@ -133,7 +171,10 @@ export function Dashboard() {
 
           <div className="flex gap-2 items-start">
             <button
-              onClick={() => setShowAddForm(true)}
+              onClick={() => {
+                setShowAddForm(true);
+                setEditingTask(null);
+              }}
               className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
             >
               + Nieuwe taak
@@ -142,9 +183,17 @@ export function Dashboard() {
         </div>
 
         {showAddForm && (
-          <AddTaskForm
+          <TaskForm
             onSubmit={handleAddTask}
             onCancel={() => setShowAddForm(false)}
+          />
+        )}
+
+        {editingTask && (
+          <TaskForm
+            task={editingTask}
+            onSubmit={handleUpdateTask}
+            onCancel={() => setEditingTask(null)}
           />
         )}
 
@@ -184,8 +233,10 @@ export function Dashboard() {
 
           <TaskList
             tasks={tasks}
-            members={members}
             onComplete={handleComplete}
+            onPostpone={handlePostpone}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
           />
         </div>
       </main>

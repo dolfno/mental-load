@@ -1,8 +1,9 @@
-import { useState } from 'react';
-import type { TaskCreateRequest, RecurrenceType, Urgency, TimeOfDay } from '../types';
+import { useState, useEffect } from 'react';
+import type { Task, TaskCreateRequest, TaskUpdateRequest, RecurrenceType, Urgency, TimeOfDay } from '../types';
 
-interface AddTaskFormProps {
-  onSubmit: (task: TaskCreateRequest) => void;
+interface TaskFormProps {
+  task?: Task;  // If provided, form is in edit mode
+  onSubmit: (data: TaskCreateRequest | TaskUpdateRequest) => void;
   onCancel: () => void;
 }
 
@@ -18,19 +19,32 @@ const recurrenceTypes: { value: RecurrenceType; label: string }[] = [
 
 const dayNames = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
 
-export function AddTaskForm({ onSubmit, onCancel }: AddTaskFormProps) {
-  const [name, setName] = useState('');
-  const [recurrenceType, setRecurrenceType] = useState<RecurrenceType>('weekly');
-  const [interval, setInterval] = useState(1);
-  const [selectedDays, setSelectedDays] = useState<number[]>([]);
-  const [timeOfDay, setTimeOfDay] = useState<TimeOfDay | ''>('');
-  const [urgency, setUrgency] = useState<Urgency | ''>('');
+export function TaskForm({ task, onSubmit, onCancel }: TaskFormProps) {
+  const isEditMode = !!task;
+
+  const [name, setName] = useState(task?.name ?? '');
+  const [recurrenceType, setRecurrenceType] = useState<RecurrenceType>(task?.recurrence.type ?? 'weekly');
+  const [interval, setInterval] = useState(task?.recurrence.interval ?? 1);
+  const [selectedDays, setSelectedDays] = useState<number[]>(task?.recurrence.days ?? []);
+  const [timeOfDay, setTimeOfDay] = useState<TimeOfDay | ''>(task?.recurrence.time_of_day ?? '');
+  const [urgency, setUrgency] = useState<Urgency | ''>(task?.urgency_label ?? '');
+
+  useEffect(() => {
+    if (task) {
+      setName(task.name);
+      setRecurrenceType(task.recurrence.type);
+      setInterval(task.recurrence.interval);
+      setSelectedDays(task.recurrence.days ?? []);
+      setTimeOfDay(task.recurrence.time_of_day ?? '');
+      setUrgency(task.urgency_label ?? '');
+    }
+  }, [task]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
 
-    const task: TaskCreateRequest = {
+    const data = {
       name: name.trim(),
       recurrence: {
         type: recurrenceType,
@@ -41,7 +55,7 @@ export function AddTaskForm({ onSubmit, onCancel }: AddTaskFormProps) {
       urgency_label: urgency || null,
     };
 
-    onSubmit(task);
+    onSubmit(data);
   };
 
   const toggleDay = (day: number) => {
@@ -52,7 +66,9 @@ export function AddTaskForm({ onSubmit, onCancel }: AddTaskFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6 space-y-4">
-      <h2 className="text-xl font-semibold text-gray-800">Nieuwe taak</h2>
+      <h2 className="text-xl font-semibold text-gray-800">
+        {isEditMode ? 'Taak bewerken' : 'Nieuwe taak'}
+      </h2>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Naam</label>
@@ -149,7 +165,7 @@ export function AddTaskForm({ onSubmit, onCancel }: AddTaskFormProps) {
           type="submit"
           className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
         >
-          Toevoegen
+          {isEditMode ? 'Opslaan' : 'Toevoegen'}
         </button>
         <button
           type="button"
@@ -162,3 +178,6 @@ export function AddTaskForm({ onSubmit, onCancel }: AddTaskFormProps) {
     </form>
   );
 }
+
+// Keep backward compatibility with AddTaskForm
+export { TaskForm as AddTaskForm };
