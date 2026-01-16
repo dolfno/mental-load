@@ -27,6 +27,7 @@ export interface Task {
   last_completed: string | null;
   next_due: string | null;
   is_active: boolean;
+  autocomplete: boolean;
 }
 
 export interface TaskCreateRequest {
@@ -34,6 +35,7 @@ export interface TaskCreateRequest {
   recurrence: RecurrencePattern;
   urgency_label?: Urgency | null;
   next_due?: string | null;
+  autocomplete?: boolean;
 }
 
 export interface TaskUpdateRequest {
@@ -42,6 +44,7 @@ export interface TaskUpdateRequest {
   urgency_label?: Urgency | null;
   next_due?: string | null;
   is_active?: boolean;
+  autocomplete?: boolean;
 }
 
 export interface Member {

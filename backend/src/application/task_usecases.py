@@ -29,6 +29,7 @@ class CreateTask:
         recurrence: RecurrencePattern,
         urgency_label: Urgency | None = None,
         next_due: date | None = None,
+        autocomplete: bool = False,
     ) -> Task:
         task = Task(
             id=None,
@@ -36,6 +37,7 @@ class CreateTask:
             recurrence=recurrence,
             urgency_label=urgency_label,
             next_due=next_due,
+            autocomplete=autocomplete,
         )
         return self.task_repo.save(task)
 
@@ -52,6 +54,7 @@ class UpdateTask:
         urgency_label: Urgency | None = None,
         next_due: date | None = None,
         is_active: bool | None = None,
+        autocomplete: bool | None = None,
     ) -> Task | None:
         task = self.task_repo.get_by_id(task_id)
         if task is None:
@@ -67,6 +70,8 @@ class UpdateTask:
             task.next_due = next_due
         if is_active is not None:
             task.is_active = is_active
+        if autocomplete is not None:
+            task.autocomplete = autocomplete
 
         return self.task_repo.save(task)
 

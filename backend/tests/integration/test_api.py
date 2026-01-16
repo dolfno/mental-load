@@ -33,7 +33,8 @@ def test_db():
                 urgency_label TEXT,
                 last_completed TIMESTAMP,
                 next_due DATE,
-                is_active BOOLEAN DEFAULT 1
+                is_active BOOLEAN DEFAULT 1,
+                autocomplete BOOLEAN DEFAULT 0
             )
         """)
         conn.execute("""

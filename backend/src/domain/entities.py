@@ -13,6 +13,7 @@ class Task:
     last_completed: datetime | None = None
     next_due: date | None = None
     is_active: bool = True
+    autocomplete: bool = False
 
 
 @dataclass

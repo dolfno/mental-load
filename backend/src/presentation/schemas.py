@@ -16,6 +16,7 @@ class TaskCreateRequest(BaseModel):
     recurrence: RecurrencePatternSchema
     urgency_label: Urgency | None = None
     next_due: date | None = None
+    autocomplete: bool = False
 
 
 class TaskUpdateRequest(BaseModel):
@@ -24,6 +25,7 @@ class TaskUpdateRequest(BaseModel):
     urgency_label: Urgency | None = None
     next_due: date | None = None
     is_active: bool | None = None
+    autocomplete: bool | None = None
 
 
 class TaskResponse(BaseModel):
@@ -35,6 +37,7 @@ class TaskResponse(BaseModel):
     last_completed: datetime | None
     next_due: date | None
     is_active: bool
+    autocomplete: bool
 
 
 class CompleteTaskRequest(BaseModel):

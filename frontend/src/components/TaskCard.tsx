@@ -15,6 +15,8 @@ const urgencyColors = {
   low: 'bg-green-100 border-green-400 text-green-800',
 };
 
+const autocompleteColors = 'bg-gray-100 border-gray-400 text-gray-700';
+
 const urgencyBadge = {
   high: 'bg-red-500 text-white',
   medium: 'bg-yellow-500 text-white',
@@ -112,13 +114,21 @@ export function TaskCard({ task, onComplete, onPostpone, onEdit, onDelete }: Tas
     setShowOverflowMenu(false);
   };
 
+  const cardColors = task.autocomplete ? autocompleteColors : urgencyColors[task.calculated_urgency];
+
   return (
-    <div data-testid="task-card" className={`border-l-4 rounded-lg p-4 shadow-sm ${urgencyColors[task.calculated_urgency]} relative`}>
+    <div data-testid="task-card" className={`border-l-4 rounded-lg p-4 shadow-sm ${cardColors} relative`}>
       <div className="flex justify-between items-start mb-2">
         <h3 className="font-semibold text-lg">{task.name}</h3>
-        <span className={`px-2 py-1 rounded text-xs font-medium ${urgencyBadge[task.calculated_urgency]}`}>
-          {task.calculated_urgency === 'high' ? 'Hoog' : task.calculated_urgency === 'medium' ? 'Gemiddeld' : 'Laag'}
-        </span>
+        {task.autocomplete ? (
+          <span className="px-2 py-1 rounded text-xs font-medium bg-gray-500 text-white">
+            Auto
+          </span>
+        ) : (
+          <span className={`px-2 py-1 rounded text-xs font-medium ${urgencyBadge[task.calculated_urgency]}`}>
+            {task.calculated_urgency === 'high' ? 'Hoog' : task.calculated_urgency === 'medium' ? 'Gemiddeld' : 'Laag'}
+          </span>
+        )}
       </div>
 
       <div className="text-sm opacity-75 mb-3">
@@ -127,13 +137,15 @@ export function TaskCard({ task, onComplete, onPostpone, onEdit, onDelete }: Tas
       </div>
 
       <div className="flex gap-2 items-center">
-        {/* Complete button */}
-        <button
-          onClick={handleComplete}
-          className="px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded text-sm font-medium transition-colors flex items-center gap-1"
-        >
-          <span>✓</span> Voltooid
-        </button>
+        {/* Complete button - hidden for autocomplete tasks */}
+        {!task.autocomplete && (
+          <button
+            onClick={handleComplete}
+            className="px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded text-sm font-medium transition-colors flex items-center gap-1"
+          >
+            <span>✓</span> Voltooid
+          </button>
+        )}
 
         {/* Postpone button */}
         <div className="relative">

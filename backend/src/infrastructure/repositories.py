@@ -54,6 +54,7 @@ class SQLiteTaskRepository(TaskRepository):
             last_completed=last_completed,
             next_due=next_due,
             is_active=bool(row["is_active"]),
+            autocomplete=bool(row["autocomplete"]) if row["autocomplete"] is not None else False,
         )
 
     def get_all(self, active_only: bool = True) -> list[Task]:
@@ -105,8 +106,8 @@ class SQLiteTaskRepository(TaskRepository):
             task_id = self.db.execute_returning_id(
                 """INSERT INTO tasks
                    (name, recurrence_type, recurrence_days, recurrence_interval,
-                    time_of_day, urgency_label, last_completed, next_due, is_active)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    time_of_day, urgency_label, last_completed, next_due, is_active, autocomplete)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 (
                     task.name,
                     task.recurrence.type.value,
@@ -117,6 +118,7 @@ class SQLiteTaskRepository(TaskRepository):
                     last_completed,
                     next_due,
                     1 if task.is_active else 0,
+                    1 if task.autocomplete else 0,
                 ),
             )
             task.id = task_id
@@ -125,7 +127,7 @@ class SQLiteTaskRepository(TaskRepository):
                 """UPDATE tasks SET
                    name = ?, recurrence_type = ?, recurrence_days = ?,
                    recurrence_interval = ?, time_of_day = ?, urgency_label = ?,
-                   last_completed = ?, next_due = ?, is_active = ?
+                   last_completed = ?, next_due = ?, is_active = ?, autocomplete = ?
                    WHERE id = ?""",
                 (
                     task.name,
@@ -137,6 +139,7 @@ class SQLiteTaskRepository(TaskRepository):
                     last_completed,
                     next_due,
                     1 if task.is_active else 0,
+                    1 if task.autocomplete else 0,
                     task.id,
                 ),
             )

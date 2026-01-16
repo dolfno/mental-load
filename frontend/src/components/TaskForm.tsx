@@ -28,6 +28,7 @@ export function TaskForm({ task, onSubmit, onCancel }: TaskFormProps) {
   const [selectedDays, setSelectedDays] = useState<number[]>(task?.recurrence.days ?? []);
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay | ''>(task?.recurrence.time_of_day ?? '');
   const [urgency, setUrgency] = useState<Urgency | ''>(task?.urgency_label ?? '');
+  const [autocomplete, setAutocomplete] = useState(task?.autocomplete ?? false);
 
   useEffect(() => {
     if (task) {
@@ -37,6 +38,7 @@ export function TaskForm({ task, onSubmit, onCancel }: TaskFormProps) {
       setSelectedDays(task.recurrence.days ?? []);
       setTimeOfDay(task.recurrence.time_of_day ?? '');
       setUrgency(task.urgency_label ?? '');
+      setAutocomplete(task.autocomplete ?? false);
     }
   }, [task]);
 
@@ -53,6 +55,7 @@ export function TaskForm({ task, onSubmit, onCancel }: TaskFormProps) {
         time_of_day: timeOfDay || null,
       },
       urgency_label: urgency || null,
+      autocomplete,
     };
 
     onSubmit(data);
@@ -158,6 +161,20 @@ export function TaskForm({ task, onSubmit, onCancel }: TaskFormProps) {
           <option value="medium">Gemiddeld</option>
           <option value="low">Laag</option>
         </select>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          id="autocomplete"
+          checked={autocomplete}
+          onChange={e => setAutocomplete(e.target.checked)}
+          className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+        />
+        <label htmlFor="autocomplete" className="text-sm font-medium text-gray-700">
+          Automatisch voltooien
+        </label>
+        <span className="text-xs text-gray-500">(schuift automatisch door naar volgende datum)</span>
       </div>
 
       <div className="flex gap-3 pt-2">

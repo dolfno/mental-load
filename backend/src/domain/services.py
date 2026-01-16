@@ -10,6 +10,10 @@ def calculate_urgency(task: Task, today: date | None = None) -> Urgency:
     if today is None:
         today = date.today()
 
+    # Autocomplete tasks are always low urgency
+    if task.autocomplete:
+        return Urgency.LOW
+
     # Manual override takes precedence for high/medium
     if task.urgency_label == Urgency.HIGH:
         return Urgency.HIGH
@@ -110,3 +114,31 @@ def _add_months(base_date: date, months: int) -> date:
     month = month % 12 + 1
     day = min(base_date.day, monthrange(year, month)[1])
     return date(year, month, day)
+
+
+def auto_advance_due_date(task: Task, today: date | None = None) -> date | None:
+    """Advance the due date for an autocomplete task if it's overdue.
+
+    Returns the new due date if advanced, or None if no change needed.
+    """
+    if today is None:
+        today = date.today()
+
+    if not task.autocomplete:
+        return None
+
+    if task.next_due is None:
+        return None
+
+    if task.next_due >= today:
+        return None
+
+    # Keep advancing until the due date is today or in the future
+    new_due = task.next_due
+    while new_due < today:
+        next_date = calculate_next_due(task, datetime.combine(new_due, datetime.min.time()))
+        if next_date is None:
+            return None
+        new_due = next_date
+
+    return new_due
