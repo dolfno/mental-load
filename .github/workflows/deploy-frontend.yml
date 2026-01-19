@@ -42,3 +42,5 @@ jobs:
           local_path: ./frontend/dist/*
           remote_path: /aivin_html/
           sftp_only: true
+          delete_remote_files: true
+
