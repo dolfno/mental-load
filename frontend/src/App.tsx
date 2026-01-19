@@ -1,23 +1,30 @@
 import { useState, useEffect, useCallback } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
+import { Routes, Route } from 'react-router';
 import type { Member } from './types';
 import { api } from './api';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Header } from './components/Header';
 import { Dashboard } from './components/Dashboard';
 import { AdminPage } from './components/AdminPage';
+import { LoginPage } from './components/LoginPage';
+import { RegisterPage } from './components/RegisterPage';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
-function App() {
+function AuthenticatedApp() {
   const [members, setMembers] = useState<Member[]>([]);
   const [membersLoading, setMembersLoading] = useState(true);
+  const { isAuthenticated } = useAuth();
 
   const loadMembers = useCallback(async () => {
+    if (!isAuthenticated) return;
     try {
       const loadedMembers = await api.members.list();
       setMembers(loadedMembers);
     } catch (err) {
       console.error('Failed to load members:', err);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     const init = async () => {
@@ -54,23 +61,42 @@ function App() {
   }
 
   return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <Routes>
+        <Route path="/" element={<Dashboard members={members} />} />
+        <Route
+          path="/beheer"
+          element={
+            <AdminPage
+              members={members}
+              onAddMember={handleAddMember}
+              onDeleteMember={handleDeleteMember}
+            />
+          }
+        />
+      </Routes>
+    </div>
+  );
+}
+
+function App() {
+  return (
     <BrowserRouter>
-      <div className="min-h-screen bg-gray-50">
-        <Header />
+      <AuthProvider>
         <Routes>
-          <Route path="/" element={<Dashboard members={members} />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
           <Route
-            path="/beheer"
+            path="/*"
             element={
-              <AdminPage
-                members={members}
-                onAddMember={handleAddMember}
-                onDeleteMember={handleDeleteMember}
-              />
+              <ProtectedRoute>
+                <AuthenticatedApp />
+              </ProtectedRoute>
             }
           />
         </Routes>
-      </div>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

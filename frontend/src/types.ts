@@ -64,3 +64,27 @@ export interface TaskCompletion {
   completed_by_id: number;
   completed_by_name?: string;
 }
+
+// Auth types
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+export interface AuthResponse {
+  user: User;
+  access_token: string;
+  token_type: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  name: string;
+  email: string;
+  password: string;
+}

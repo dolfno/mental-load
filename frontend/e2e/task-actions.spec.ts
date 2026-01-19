@@ -1,9 +1,39 @@
 import { test, expect } from '@playwright/test';
 
+// Test user credentials
+const testEmail = 'tasktest@example.com';
+const testPassword = 'testpassword123';
+const testName = 'Task Tester';
+
 test.describe('Task Actions', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-    // Wait for tasks to load
+    // Go to login page first
+    await page.goto('/login');
+
+    // Try to register - if user already exists, this will fail and we'll login
+    const registerResponse = await page.request.post('/api/auth/register', {
+      data: { name: testName, email: testEmail, password: testPassword }
+    }).catch(() => null);
+
+    if (registerResponse?.ok()) {
+      // New user registered, store token and reload
+      const data = await registerResponse.json();
+      await page.evaluate((token) => localStorage.setItem('auth_token', token), data.access_token);
+      await page.goto('/');
+    } else {
+      // User exists, login via form
+      await page.fill('input[name="email"]', testEmail);
+      await page.fill('input[name="password"]', testPassword);
+
+      const responsePromise = page.waitForResponse(
+        response => response.url().includes('/api/auth/login')
+      );
+      await page.click('button[type="submit"]');
+      await responsePromise;
+    }
+
+    // Wait for dashboard to load
+    await expect(page).toHaveURL('/', { timeout: 10000 });
     await page.waitForSelector('[data-testid="task-card"], .text-gray-500:has-text("Geen taken")', { timeout: 10000 });
   });
 
@@ -20,8 +50,8 @@ test.describe('Task Actions', () => {
     // Get the task name before completing
     const taskName = await taskCard.locator('h3').textContent();
 
-    // Get the original due date text
-    const originalDueText = await taskCard.locator('.text-sm.opacity-75 .font-medium').textContent();
+    // Get the original due date text (first .font-medium inside the due date section)
+    const originalDueText = await taskCard.locator('.text-sm.opacity-75 > div.font-medium').first().textContent();
 
     // Click the voltooid button
     const voltooidButton = taskCard.getByRole('button', { name: /voltooid/i });
@@ -46,7 +76,7 @@ test.describe('Task Actions', () => {
     // Verify the task's due date has changed (next occurrence)
     const updatedTaskCard = page.locator('[data-testid="task-card"]').filter({ hasText: taskName! });
     if (await updatedTaskCard.count() > 0) {
-      const newDueText = await updatedTaskCard.locator('.text-sm.opacity-75 .font-medium').textContent();
+      const newDueText = await updatedTaskCard.locator('.text-sm.opacity-75 > div.font-medium').first().textContent();
       // After completion, the due date should change to the next occurrence
       console.log(`Due date changed from "${originalDueText}" to "${newDueText}"`);
     }
@@ -93,7 +123,7 @@ test.describe('Task Actions', () => {
     // Verify the task now shows "Morgen" as due date
     const updatedTaskCard = page.locator('[data-testid="task-card"]').filter({ hasText: taskName! });
     if (await updatedTaskCard.count() > 0) {
-      const dueText = await updatedTaskCard.locator('.text-sm.opacity-75 .font-medium').textContent();
+      const dueText = await updatedTaskCard.locator('.text-sm.opacity-75 > div.font-medium').first().textContent();
       expect(dueText).toBe('Morgen');
     }
   });
