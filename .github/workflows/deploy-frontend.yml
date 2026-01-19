@@ -33,12 +33,12 @@ jobs:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
 
       - name: Deploy to Strato via SFTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
         with:
           server: ${{ secrets.SFTP_HOST }}
           port: 22
-          sftp_only: true
           username: ${{ secrets.SFTP_USERNAME }}
           password: ${{ secrets.SFTP_PASSWORD }}
-          local-dir: frontend/dist/
-          server-dir: /aivin_html/
+          local_path: ./frontend/dist/*
+          remote_path: /aivin_html/
+          sftp_only: true
