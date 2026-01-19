@@ -160,7 +160,12 @@ class SQLiteMemberRepository(MemberRepository):
         self.db = db
 
     def _row_to_member(self, row) -> HouseholdMember:
-        return HouseholdMember(id=row["id"], name=row["name"])
+        return HouseholdMember(
+            id=row["id"],
+            name=row["name"],
+            email=row["email"] if "email" in row.keys() else None,
+            password_hash=row["password_hash"] if "password_hash" in row.keys() else None,
+        )
 
     def get_all(self) -> list[HouseholdMember]:
         rows = self.db.execute("SELECT * FROM household_members ORDER BY name")
@@ -182,16 +187,25 @@ class SQLiteMemberRepository(MemberRepository):
             return None
         return self._row_to_member(rows[0])
 
+    def get_by_email(self, email: str) -> HouseholdMember | None:
+        rows = self.db.execute(
+            "SELECT * FROM household_members WHERE email = ?", (email,)
+        )
+        if not rows:
+            return None
+        return self._row_to_member(rows[0])
+
     def save(self, member: HouseholdMember) -> HouseholdMember:
         if member.id is None:
             member_id = self.db.execute_returning_id(
-                "INSERT INTO household_members (name) VALUES (?)", (member.name,)
+                "INSERT INTO household_members (name, email, password_hash) VALUES (?, ?, ?)",
+                (member.name, member.email, member.password_hash),
             )
             member.id = member_id
         else:
             self.db.execute(
-                "UPDATE household_members SET name = ? WHERE id = ?",
-                (member.name, member.id),
+                "UPDATE household_members SET name = ?, email = ?, password_hash = ? WHERE id = ?",
+                (member.name, member.email, member.password_hash, member.id),
             )
         return member
 

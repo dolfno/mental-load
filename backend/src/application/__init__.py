@@ -15,6 +15,7 @@ from .member_usecases import (
     DeleteMember,
     GetCompletionHistory,
 )
+from .auth_usecases import RegisterUser, LoginUser, GetCurrentUser
 
 __all__ = [
     "TaskRepository",
@@ -32,4 +33,7 @@ __all__ = [
     "GetAllMembers",
     "DeleteMember",
     "GetCompletionHistory",
+    "RegisterUser",
+    "LoginUser",
+    "GetCurrentUser",
 ]

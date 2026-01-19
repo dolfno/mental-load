@@ -40,6 +40,10 @@ class MemberRepository(ABC):
         pass
 
     @abstractmethod
+    def get_by_email(self, email: str) -> HouseholdMember | None:
+        pass
+
+    @abstractmethod
     def save(self, member: HouseholdMember) -> HouseholdMember:
         pass
 

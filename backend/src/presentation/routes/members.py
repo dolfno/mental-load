@@ -1,8 +1,10 @@
 from fastapi import APIRouter, HTTPException, Depends
 
+from src.domain import HouseholdMember
 from src.application import CreateMember, GetAllMembers, DeleteMember
 from src.infrastructure import get_database, SQLiteMemberRepository
 from ..schemas import MemberCreateRequest, MemberResponse
+from ..dependencies import get_current_user
 
 router = APIRouter(prefix="/api/members", tags=["members"])
 
@@ -13,7 +15,10 @@ def get_member_repo():
 
 
 @router.get("", response_model=list[MemberResponse])
-def list_members(member_repo: SQLiteMemberRepository = Depends(get_member_repo)):
+def list_members(
+    current_user: HouseholdMember = Depends(get_current_user),
+    member_repo: SQLiteMemberRepository = Depends(get_member_repo),
+):
     use_case = GetAllMembers(member_repo)
     members = use_case.execute()
     return [MemberResponse(id=m.id, name=m.name) for m in members]
@@ -22,6 +27,7 @@ def list_members(member_repo: SQLiteMemberRepository = Depends(get_member_repo))
 @router.post("", response_model=MemberResponse, status_code=201)
 def create_member(
     request: MemberCreateRequest,
+    current_user: HouseholdMember = Depends(get_current_user),
     member_repo: SQLiteMemberRepository = Depends(get_member_repo),
 ):
     use_case = CreateMember(member_repo)
@@ -32,6 +38,7 @@ def create_member(
 @router.delete("/{member_id}", status_code=204)
 def delete_member(
     member_id: int,
+    current_user: HouseholdMember = Depends(get_current_user),
     member_repo: SQLiteMemberRepository = Depends(get_member_repo),
 ):
     use_case = DeleteMember(member_repo)

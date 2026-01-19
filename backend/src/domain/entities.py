@@ -21,6 +21,8 @@ class Task:
 class HouseholdMember:
     id: int | None
     name: str
+    email: str | None = None
+    password_hash: str | None = None
 
 
 @dataclass

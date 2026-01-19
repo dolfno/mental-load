@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 
-from src.domain import RecurrencePattern
+from src.domain import RecurrencePattern, HouseholdMember
 from src.application import (
     CreateTask,
     UpdateTask,
@@ -24,6 +24,7 @@ from ..schemas import (
     CompleteTaskRequest,
     RecurrencePatternSchema,
 )
+from ..dependencies import get_current_user
 
 router = APIRouter(prefix="/api/tasks", tags=["tasks"])
 
@@ -77,6 +78,7 @@ def task_with_urgency_to_response(
 @router.get("", response_model=list[TaskResponse])
 def list_tasks(
     active_only: bool = True,
+    current_user: HouseholdMember = Depends(get_current_user),
     task_repo: SQLiteTaskRepository = Depends(get_task_repo),
     member_repo: SQLiteMemberRepository = Depends(get_member_repo),
 ):
@@ -97,6 +99,7 @@ def list_tasks(
 
 @router.get("/urgent", response_model=list[TaskResponse])
 def list_urgent_tasks(
+    current_user: HouseholdMember = Depends(get_current_user),
     task_repo: SQLiteTaskRepository = Depends(get_task_repo),
     member_repo: SQLiteMemberRepository = Depends(get_member_repo),
 ):
@@ -108,6 +111,7 @@ def list_urgent_tasks(
 @router.get("/upcoming", response_model=list[TaskResponse])
 def list_upcoming_tasks(
     days: int = 7,
+    current_user: HouseholdMember = Depends(get_current_user),
     task_repo: SQLiteTaskRepository = Depends(get_task_repo),
     member_repo: SQLiteMemberRepository = Depends(get_member_repo),
 ):
@@ -119,6 +123,7 @@ def list_upcoming_tasks(
 @router.post("", response_model=TaskResponse, status_code=201)
 def create_task(
     request: TaskCreateRequest,
+    current_user: HouseholdMember = Depends(get_current_user),
     task_repo: SQLiteTaskRepository = Depends(get_task_repo),
     member_repo: SQLiteMemberRepository = Depends(get_member_repo),
 ):
@@ -149,6 +154,7 @@ def create_task(
 def update_task(
     task_id: int,
     request: TaskUpdateRequest,
+    current_user: HouseholdMember = Depends(get_current_user),
     task_repo: SQLiteTaskRepository = Depends(get_task_repo),
     member_repo: SQLiteMemberRepository = Depends(get_member_repo),
 ):
@@ -190,6 +196,7 @@ def update_task(
 def complete_task(
     task_id: int,
     request: CompleteTaskRequest | None = None,
+    current_user: HouseholdMember = Depends(get_current_user),
     task_repo: SQLiteTaskRepository = Depends(get_task_repo),
     completion_repo: SQLiteCompletionRepository = Depends(get_completion_repo),
     member_repo: SQLiteMemberRepository = Depends(get_member_repo),
@@ -211,6 +218,7 @@ def complete_task(
 @router.delete("/{task_id}", status_code=204)
 def delete_task(
     task_id: int,
+    current_user: HouseholdMember = Depends(get_current_user),
     task_repo: SQLiteTaskRepository = Depends(get_task_repo),
 ):
     use_case = DeactivateTask(task_repo)

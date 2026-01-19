@@ -67,3 +67,34 @@ class TaskCompletionResponse(BaseModel):
     completed_at: datetime
     completed_by_id: int | None = None
     completed_by_name: str | None = None
+
+
+# Auth schemas
+class RegisterRequest(BaseModel):
+    name: str
+    email: str
+    password: str
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+
+class UserResponse(BaseModel):
+    id: int
+    name: str
+    email: str
+
+
+class AuthResponse(BaseModel):
+    user: UserResponse
+    access_token: str
+    token_type: str = "bearer"
+
+
+# Admin schemas
+class CreateUserRequest(BaseModel):
+    name: str
+    email: str
+    password: str

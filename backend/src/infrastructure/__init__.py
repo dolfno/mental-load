@@ -4,6 +4,7 @@ from .repositories import (
     SQLiteMemberRepository,
     SQLiteCompletionRepository,
 )
+from .auth import AuthService
 
 __all__ = [
     "Database",
@@ -12,4 +13,5 @@ __all__ = [
     "SQLiteTaskRepository",
     "SQLiteMemberRepository",
     "SQLiteCompletionRepository",
+    "AuthService",
 ]

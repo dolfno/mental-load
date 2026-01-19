@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 
+from src.domain import HouseholdMember
 from src.application import GetCompletionHistory
 from src.infrastructure import (
     get_database,
@@ -8,6 +9,7 @@ from src.infrastructure import (
     SQLiteMemberRepository,
 )
 from ..schemas import TaskCompletionResponse
+from ..dependencies import get_current_user
 
 router = APIRouter(prefix="/api/history", tags=["history"])
 
@@ -30,6 +32,7 @@ def get_member_repo():
 @router.get("", response_model=list[TaskCompletionResponse])
 def list_history(
     limit: int | None = 100,
+    current_user: HouseholdMember = Depends(get_current_user),
     completion_repo: SQLiteCompletionRepository = Depends(get_completion_repo),
     task_repo: SQLiteTaskRepository = Depends(get_task_repo),
     member_repo: SQLiteMemberRepository = Depends(get_member_repo),
