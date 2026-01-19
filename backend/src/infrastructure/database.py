@@ -23,7 +23,14 @@ class TursoConnection:
 
     def __init__(self, base_url: str, auth_token: str):
         # Convert libsql:// to https:// for HTTP API
-        self.base_url = base_url.replace("libsql://", "https://")
+        # Handle various URL formats: trailing slashes, existing paths, etc.
+        url = base_url.replace("libsql://", "https://")
+        # Strip trailing slashes and any path components
+        url = url.rstrip("/")
+        # Remove any existing path (e.g., /v2/pipeline if already included)
+        if "/v2/pipeline" in url:
+            url = url.split("/v2/pipeline")[0]
+        self.base_url = url
         self.auth_token = auth_token
 
     def _request(self, statements: list[dict]) -> list[dict]:
