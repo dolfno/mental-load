@@ -33,14 +33,9 @@ jobs:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
 
       - name: Deploy to Strato via SFTP
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
-        with:
-          server: ${{ secrets.SFTP_HOST }}
-          port: 22
-          username: ${{ secrets.SFTP_USERNAME }}
-          password: ${{ secrets.SFTP_PASSWORD }}
-          local_path: ./frontend/dist/*
-          remote_path: /aivin_html/
-          sftp_only: true
-          delete_remote_files: true
+        run: |
+          sudo apt-get update && sudo apt-get install -y lftp
+          lftp -u "${{ secrets.SFTP_USERNAME }},${{ secrets.SFTP_PASSWORD }}" \
+            -e "set sftp:auto-confirm yes; mirror -R --delete --verbose dist/ /aivin_html/; quit" \
+            sftp://${{ secrets.SFTP_HOST }}
 
