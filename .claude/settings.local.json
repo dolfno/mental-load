@@ -9,7 +9,24 @@
       "Bash(npm run build:*)",
       "Bash(git add:*)",
       "Bash(git rm:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git worktree:*)",
+      "Bash(uv run uvicorn:*)",
+      "Bash(npm run dev)",
+      "Bash(npm run test:e2e:*)",
+      "Bash(sqlite3:*)",
+      "Bash(uv run alembic:*)",
+      "Bash(npx tsc:*)",
+      "Bash(git push)",
+      "Bash(git pull:*)",
+      "WebFetch(domain:aivin.jorindeendolf.nl)",
+      "Bash(uv sync:*)",
+      "Bash(uv pip index:*)",
+      "WebSearch",
+      "Bash(uv pip show:*)",
+      "Bash(source:*)",
+      "Bash(curl:*)",
+      "Bash(unset:*)"
     ]
   }
 }

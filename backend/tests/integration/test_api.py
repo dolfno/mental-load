@@ -24,11 +24,13 @@ def test_db():
     alembic_cfg.set_main_option("sqlalchemy.url", f"sqlite:///{path}")
     command.upgrade(alembic_cfg, "head")
 
-    db = Database(path)
+    db = Database(path, use_turso=False)
     set_database(db)
 
     yield db
 
+    # Reset singleton for next test
+    set_database(None)
     os.unlink(path)
 
 
