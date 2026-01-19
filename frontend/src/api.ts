@@ -1,6 +1,7 @@
 import type { Task, TaskCreateRequest, TaskUpdateRequest, Member, TaskCompletion } from './types';
 
-const BASE_URL = '/api';
+// Use VITE_API_URL for production deployment, defaults to /api for local development
+const BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 async function fetchJSON<T>(url: string, options?: RequestInit): Promise<T> {
   const response = await fetch(url, {
