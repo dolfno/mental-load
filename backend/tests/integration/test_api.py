@@ -298,6 +298,71 @@ class TestAuthEndpoints:
         assert response.status_code == 401
 
 
+class TestNoteEndpoints:
+    def test_get_note(self, client, auth_headers):
+        """Get the shared household note."""
+        response = client.get("/api/notes", headers=auth_headers)
+        assert response.status_code == 200
+        data = response.json()
+        assert "id" in data
+        assert "content" in data
+        assert "updated_at" in data
+
+    def test_update_note(self, client, auth_headers):
+        """Update the shared household note."""
+        response = client.put(
+            "/api/notes",
+            json={"content": "Shopping list:\n- Milk\n- Bread"},
+            headers=auth_headers,
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["content"] == "Shopping list:\n- Milk\n- Bread"
+        assert "updated_at" in data
+
+    def test_note_persists_after_update(self, client, auth_headers):
+        """Verify that note content persists after update."""
+        # Update note
+        client.put(
+            "/api/notes",
+            json={"content": "Persistent content"},
+            headers=auth_headers,
+        )
+
+        # Get note and verify content
+        response = client.get("/api/notes", headers=auth_headers)
+        assert response.status_code == 200
+        assert response.json()["content"] == "Persistent content"
+
+    def test_note_can_be_emptied(self, client, auth_headers):
+        """Verify that note can be set to empty string."""
+        # Set some content first
+        client.put(
+            "/api/notes",
+            json={"content": "Some content"},
+            headers=auth_headers,
+        )
+
+        # Clear the note
+        response = client.put(
+            "/api/notes",
+            json={"content": ""},
+            headers=auth_headers,
+        )
+        assert response.status_code == 200
+        assert response.json()["content"] == ""
+
+    def test_note_requires_authentication(self, client):
+        """Note endpoints should require authentication."""
+        # GET without auth
+        response = client.get("/api/notes")
+        assert response.status_code == 401
+
+        # PUT without auth
+        response = client.put("/api/notes", json={"content": "test"})
+        assert response.status_code == 401
+
+
 class TestAdminEndpoints:
     def test_create_user_without_api_key(self, client):
         """Creating user without API key should fail."""

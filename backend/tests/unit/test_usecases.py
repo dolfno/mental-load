@@ -9,6 +9,7 @@ from src.domain import (
     Task,
     HouseholdMember,
     TaskCompletion,
+    Note,
     RecurrencePattern,
     RecurrenceType,
     Urgency,
@@ -22,6 +23,8 @@ from src.application import (
     DeactivateTask,
     CreateMember,
     GetAllMembers,
+    GetNote,
+    UpdateNote,
 )
 
 
@@ -292,3 +295,79 @@ class TestGetAllMembers:
         result = use_case.execute()
 
         assert len(result) == 2
+
+
+class TestGetNote:
+    def test_returns_existing_note(self):
+        note = Note(
+            id=1,
+            content="Shopping list",
+            updated_at=datetime.now(),
+        )
+        mock_repo = MagicMock()
+        mock_repo.get.return_value = note
+
+        use_case = GetNote(mock_repo)
+        result = use_case.execute()
+
+        assert result is not None
+        assert result.content == "Shopping list"
+        mock_repo.get.assert_called_once()
+
+    def test_returns_none_when_no_note_exists(self):
+        mock_repo = MagicMock()
+        mock_repo.get.return_value = None
+
+        use_case = GetNote(mock_repo)
+        result = use_case.execute()
+
+        assert result is None
+
+
+class TestUpdateNote:
+    def test_updates_existing_note(self):
+        existing_note = Note(
+            id=1,
+            content="Old content",
+            updated_at=datetime.now(),
+        )
+        mock_repo = MagicMock()
+        mock_repo.get.return_value = existing_note
+        mock_repo.save.return_value = existing_note
+
+        use_case = UpdateNote(mock_repo)
+        result = use_case.execute(content="New content")
+
+        assert result.content == "New content"
+        mock_repo.save.assert_called_once()
+
+    def test_creates_note_when_none_exists(self):
+        mock_repo = MagicMock()
+        mock_repo.get.return_value = None
+        mock_repo.save.return_value = Note(
+            id=1,
+            content="New content",
+            updated_at=datetime.now(),
+        )
+
+        use_case = UpdateNote(mock_repo)
+        result = use_case.execute(content="New content")
+
+        assert result.content == "New content"
+        mock_repo.save.assert_called_once()
+
+    def test_can_set_empty_content(self):
+        existing_note = Note(
+            id=1,
+            content="Some content",
+            updated_at=datetime.now(),
+        )
+        mock_repo = MagicMock()
+        mock_repo.get.return_value = existing_note
+        mock_repo.save.return_value = existing_note
+
+        use_case = UpdateNote(mock_repo)
+        result = use_case.execute(content="")
+
+        assert result.content == ""
+        mock_repo.save.assert_called_once()
