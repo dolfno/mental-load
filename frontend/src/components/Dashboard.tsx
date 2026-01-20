@@ -73,6 +73,7 @@ export function Dashboard({ members }: DashboardProps) {
     setEditingTask(task);
     setShowAddForm(false);
     setFormHasChanges(false);
+    setError(null);
   };
 
   const handleCloseAttempt = (): boolean => {
@@ -155,6 +156,7 @@ export function Dashboard({ members }: DashboardProps) {
             setShowAddForm(true);
             setEditingTask(null);
             setFormHasChanges(false);
+            setError(null);
           }}
           className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
         >
@@ -172,6 +174,7 @@ export function Dashboard({ members }: DashboardProps) {
           onSubmit={handleAddTask}
           onCancel={handleCloseAddForm}
           onFormChange={setFormHasChanges}
+          error={error}
         />
       </Modal>
 
@@ -187,6 +190,7 @@ export function Dashboard({ members }: DashboardProps) {
             onSubmit={handleUpdateTask}
             onCancel={handleCloseEditForm}
             onFormChange={setFormHasChanges}
+            error={error}
           />
         )}
       </Modal>
