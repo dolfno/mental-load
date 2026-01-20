@@ -71,11 +71,7 @@ Migrations in `backend/alembic/versions/`.
 
 ### Running Migrations
 ```bash
-# Local development (SQLite)
-uv run alembic upgrade head
-
-# Production (Turso) - requires TURSO_DATABASE_URL and TURSO_AUTH_TOKEN
-python scripts/migrate.py
+uv run alembic upgrade head  # Auto-detects SQLite (local) or Turso (if env vars set)
 ```
 
 Tables: `tasks`, `household_members`, `task_completions`, `notes`
