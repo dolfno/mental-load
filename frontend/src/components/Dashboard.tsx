@@ -3,6 +3,7 @@ import type { Task, Member, TaskCreateRequest, TaskUpdateRequest } from '../type
 import { api } from '../api';
 import { TaskList } from './TaskList';
 import { TaskForm } from './TaskForm';
+import { Modal } from './Modal';
 
 type ViewMode = 'all' | 'urgent' | 'upcoming';
 
@@ -17,6 +18,7 @@ export function Dashboard({ members }: DashboardProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('all');
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [formHasChanges, setFormHasChanges] = useState(false);
 
   const loadTasks = useCallback(async () => {
     try {
@@ -70,6 +72,24 @@ export function Dashboard({ members }: DashboardProps) {
   const handleEdit = (task: Task) => {
     setEditingTask(task);
     setShowAddForm(false);
+    setFormHasChanges(false);
+  };
+
+  const handleCloseAttempt = (): boolean => {
+    if (formHasChanges) {
+      return window.confirm('Je hebt niet-opgeslagen wijzigingen. Weet je zeker dat je wilt sluiten?');
+    }
+    return true;
+  };
+
+  const handleCloseAddForm = () => {
+    setShowAddForm(false);
+    setFormHasChanges(false);
+  };
+
+  const handleCloseEditForm = () => {
+    setEditingTask(null);
+    setFormHasChanges(false);
   };
 
   const handleDelete = async (taskId: number) => {
@@ -87,6 +107,7 @@ export function Dashboard({ members }: DashboardProps) {
       await api.tasks.create(data as TaskCreateRequest);
       await loadTasks();
       setShowAddForm(false);
+      setFormHasChanges(false);
     } catch (err) {
       setError('Kan taak niet toevoegen');
       console.error(err);
@@ -99,6 +120,7 @@ export function Dashboard({ members }: DashboardProps) {
       await api.tasks.update(editingTask.id, data as TaskUpdateRequest);
       await loadTasks();
       setEditingTask(null);
+      setFormHasChanges(false);
     } catch (err) {
       setError('Kan taak niet bijwerken');
       console.error(err);
@@ -132,6 +154,7 @@ export function Dashboard({ members }: DashboardProps) {
           onClick={() => {
             setShowAddForm(true);
             setEditingTask(null);
+            setFormHasChanges(false);
           }}
           className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
         >
@@ -139,22 +162,34 @@ export function Dashboard({ members }: DashboardProps) {
         </button>
       </div>
 
-      {showAddForm && (
+      <Modal
+        isOpen={showAddForm}
+        onClose={handleCloseAddForm}
+        onCloseAttempt={handleCloseAttempt}
+      >
         <TaskForm
           members={members}
           onSubmit={handleAddTask}
-          onCancel={() => setShowAddForm(false)}
+          onCancel={handleCloseAddForm}
+          onFormChange={setFormHasChanges}
         />
-      )}
+      </Modal>
 
-      {editingTask && (
-        <TaskForm
-          task={editingTask}
-          members={members}
-          onSubmit={handleUpdateTask}
-          onCancel={() => setEditingTask(null)}
-        />
-      )}
+      <Modal
+        isOpen={!!editingTask}
+        onClose={handleCloseEditForm}
+        onCloseAttempt={handleCloseAttempt}
+      >
+        {editingTask && (
+          <TaskForm
+            task={editingTask}
+            members={members}
+            onSubmit={handleUpdateTask}
+            onCancel={handleCloseEditForm}
+            onFormChange={setFormHasChanges}
+          />
+        )}
+      </Modal>
 
       <div className="bg-white rounded-lg shadow-md p-4">
         <div className="flex gap-2 mb-4">
