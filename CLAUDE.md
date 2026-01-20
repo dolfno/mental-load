@@ -38,7 +38,7 @@ backend/src/
 │   ├── task_usecases.py
 │   └── member_usecases.py
 ├── infrastructure/  # External dependencies
-│   ├── database.py      # SQLite connection
+│   ├── database.py      # SQLite (local) / Turso HTTP API (prod)
 │   ├── repositories.py  # Concrete repository implementations
 │   └── task_importer.py # Parse tasks.md into database
 └── presentation/    # FastAPI layer
@@ -64,9 +64,17 @@ frontend/src/
 
 ## Database
 
-SQLite database at `backend/aivin.db`. Migrations in `backend/alembic/versions/`.
+- **Local dev/tests**: SQLite (via Alembic)
+- **Production**: Turso (via HTTP API)
 
-Tables: `tasks`, `household_members`, `task_completions`
+Migrations in `backend/alembic/versions/`.
+
+### Running Migrations
+```bash
+uv run alembic upgrade head  # Auto-detects SQLite (local) or Turso (if env vars set)
+```
+
+Tables: `tasks`, `household_members`, `task_completions`, `notes`
 
 ## API
 
