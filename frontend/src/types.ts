@@ -30,6 +30,7 @@ export interface Task {
   assigned_to_id: number | null;
   assigned_to_name: string | null;
   autocomplete: boolean;
+  description: string | null;
 }
 
 export interface TaskCreateRequest {
@@ -39,6 +40,7 @@ export interface TaskCreateRequest {
   next_due?: string | null;
   assigned_to_id?: number | null;
   autocomplete?: boolean;
+  description?: string | null;
 }
 
 export interface TaskUpdateRequest {
@@ -49,6 +51,7 @@ export interface TaskUpdateRequest {
   is_active?: boolean;
   assigned_to_id?: number | null;
   autocomplete?: boolean;
+  description?: string | null;
 }
 
 export interface Member {

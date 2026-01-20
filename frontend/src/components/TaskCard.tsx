@@ -97,6 +97,7 @@ export function TaskCard({ task, onComplete, onPostpone, onEdit, onDelete }: Tas
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showCustomDate, setShowCustomDate] = useState(false);
   const [customDate, setCustomDate] = useState('');
+  const [showDescription, setShowDescription] = useState(false);
 
   const handleComplete = () => {
     onComplete(task.id);
@@ -139,6 +140,23 @@ export function TaskCard({ task, onComplete, onPostpone, onEdit, onDelete }: Tas
             <span className="inline-block px-2 py-0.5 bg-purple-500 text-white rounded text-xs font-medium">
               {task.assigned_to_name}
             </span>
+          </div>
+        )}
+        {task.description && (
+          <div className="mt-2">
+            <button
+              type="button"
+              onClick={() => setShowDescription(!showDescription)}
+              className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
+            >
+              <span>{showDescription ? '▼' : '▶'}</span>
+              <span>Beschrijving</span>
+            </button>
+            {showDescription && (
+              <div className="mt-1 p-2 bg-white/50 rounded text-gray-700 whitespace-pre-wrap">
+                {task.description}
+              </div>
+            )}
           </div>
         )}
       </div>

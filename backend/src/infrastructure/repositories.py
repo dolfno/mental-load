@@ -57,6 +57,7 @@ class SQLiteTaskRepository(TaskRepository):
             is_active=bool(row["is_active"]),
             assigned_to_id=row["assigned_to_id"],
             autocomplete=bool(row["autocomplete"]) if row["autocomplete"] is not None else False,
+            description=row["description"] if "description" in row.keys() else None,
         )
 
     def get_all(self, active_only: bool = True) -> list[Task]:
@@ -109,8 +110,8 @@ class SQLiteTaskRepository(TaskRepository):
                 """INSERT INTO tasks
                    (name, recurrence_type, recurrence_days, recurrence_interval,
                     time_of_day, urgency_label, last_completed, next_due, is_active,
-                    assigned_to_id, autocomplete)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    assigned_to_id, autocomplete, description)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 (
                     task.name,
                     task.recurrence.type.value,
@@ -123,6 +124,7 @@ class SQLiteTaskRepository(TaskRepository):
                     1 if task.is_active else 0,
                     task.assigned_to_id,
                     1 if task.autocomplete else 0,
+                    task.description,
                 ),
             )
             task.id = task_id
@@ -132,7 +134,7 @@ class SQLiteTaskRepository(TaskRepository):
                    name = ?, recurrence_type = ?, recurrence_days = ?,
                    recurrence_interval = ?, time_of_day = ?, urgency_label = ?,
                    last_completed = ?, next_due = ?, is_active = ?, assigned_to_id = ?,
-                   autocomplete = ?
+                   autocomplete = ?, description = ?
                    WHERE id = ?""",
                 (
                     task.name,
@@ -146,6 +148,7 @@ class SQLiteTaskRepository(TaskRepository):
                     1 if task.is_active else 0,
                     task.assigned_to_id,
                     1 if task.autocomplete else 0,
+                    task.description,
                     task.id,
                 ),
             )

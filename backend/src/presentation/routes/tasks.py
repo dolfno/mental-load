@@ -72,6 +72,7 @@ def task_with_urgency_to_response(
         assigned_to_id=task.assigned_to_id,
         assigned_to_name=assigned_to_name,
         autocomplete=task.autocomplete,
+        description=task.description,
     )
 
 
@@ -142,6 +143,7 @@ def create_task(
         next_due=request.next_due,
         assigned_to_id=request.assigned_to_id,
         autocomplete=request.autocomplete,
+        description=request.description,
     )
 
     from src.domain import calculate_urgency
@@ -172,6 +174,7 @@ def update_task(
     assigned_to_id = ... if "assigned_to_id" not in request.model_fields_set else request.assigned_to_id
     urgency_label = ... if "urgency_label" not in request.model_fields_set else request.urgency_label
     autocomplete = ... if "autocomplete" not in request.model_fields_set else request.autocomplete
+    description = ... if "description" not in request.model_fields_set else request.description
 
     use_case = UpdateTask(task_repo)
     task = use_case.execute(
@@ -183,6 +186,7 @@ def update_task(
         is_active=request.is_active,
         assigned_to_id=assigned_to_id,
         autocomplete=autocomplete,
+        description=description,
     )
 
     if task is None:
