@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../api';
 import type { Note } from '../types';
 
@@ -8,6 +8,27 @@ export function NotepadPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+
+  // Refs to track current values for save-on-unmount
+  const contentRef = useRef(content);
+  const noteRef = useRef(note);
+  contentRef.current = content;
+  noteRef.current = note;
+
+  const saveNote = useCallback(async (contentToSave: string) => {
+    setSaving(true);
+    try {
+      const updatedNote = await api.notes.update({ content: contentToSave });
+      setNote(updatedNote);
+      setLastSaved(new Date());
+      return updatedNote;
+    } catch (err) {
+      console.error('Failed to save note:', err);
+      return null;
+    } finally {
+      setSaving(false);
+    }
+  }, []);
 
   const loadNote = useCallback(async () => {
     try {
@@ -25,26 +46,43 @@ export function NotepadPage() {
     loadNote();
   }, [loadNote]);
 
+  const hasUnsavedChanges = note !== null && content !== note.content;
+
+  // Warn about unsaved changes when leaving the page (browser close/refresh)
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
+
+  // Save on unmount (when navigating away within the app)
+  useEffect(() => {
+    return () => {
+      const currentContent = contentRef.current;
+      const currentNote = noteRef.current;
+      if (currentNote && currentContent !== currentNote.content) {
+        // Fire and forget - component is unmounting
+        api.notes.update({ content: currentContent }).catch(console.error);
+      }
+    };
+  }, []);
+
   // Auto-save with debounce
   useEffect(() => {
     if (loading || note === null) return;
     if (content === note.content) return;
 
-    const timeoutId = setTimeout(async () => {
-      setSaving(true);
-      try {
-        const updatedNote = await api.notes.update({ content });
-        setNote(updatedNote);
-        setLastSaved(new Date());
-      } catch (err) {
-        console.error('Failed to save note:', err);
-      } finally {
-        setSaving(false);
-      }
+    const timeoutId = setTimeout(() => {
+      saveNote(content);
     }, 1000);
 
     return () => clearTimeout(timeoutId);
-  }, [content, note, loading]);
+  }, [content, note, loading, saveNote]);
 
   const formatLastSaved = () => {
     if (!lastSaved) return null;
@@ -67,22 +105,31 @@ export function NotepadPage() {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-800">Kladblok</h2>
-          <div className="text-sm text-gray-500">
-            {saving ? (
-              <span>Opslaan...</span>
-            ) : lastSaved ? (
-              <span>Opgeslagen om {formatLastSaved()}</span>
-            ) : note?.updated_at ? (
-              <span>
-                Laatst bewerkt:{' '}
-                {new Date(note.updated_at).toLocaleString('nl-NL', {
+          <div className="flex items-center gap-3 text-sm">
+            {hasUnsavedChanges && !saving && (
+              <span className="text-yellow-600">Niet-opgeslagen wijzigingen</span>
+            )}
+            <span className="text-gray-500">
+              {saving ? (
+                'Opslaan...'
+              ) : lastSaved ? (
+                `Opgeslagen om ${formatLastSaved()}`
+              ) : note?.updated_at ? (
+                `Laatst bewerkt: ${new Date(note.updated_at).toLocaleString('nl-NL', {
                   day: 'numeric',
                   month: 'short',
                   hour: '2-digit',
                   minute: '2-digit',
-                })}
-              </span>
-            ) : null}
+                })}`
+              ) : null}
+            </span>
+            <button
+              onClick={loadNote}
+              className="px-3 py-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
+              title="Vernieuwen"
+            >
+              Vernieuwen
+            </button>
           </div>
         </div>
         <div className="p-4">
