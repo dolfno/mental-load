@@ -97,9 +97,26 @@ class TursoCursor:
             for i, col in enumerate(cols):
                 col_name = col.get("name", f"col_{i}")
                 cell = row[i] if i < len(row) else None
-                row_dict[col_name] = cell.get("value") if isinstance(cell, dict) else cell
+                row_dict[col_name] = self._parse_cell(cell)
             parsed.append(TursoRow(row_dict))
         return parsed
+
+    def _parse_cell(self, cell) -> any:
+        """Parse a Turso cell value, converting to appropriate Python type."""
+        if not isinstance(cell, dict):
+            return cell
+
+        cell_type = cell.get("type")
+        value = cell.get("value")
+
+        if cell_type == "null" or value is None:
+            return None
+        if cell_type == "integer":
+            return int(value)
+        if cell_type == "float":
+            return float(value)
+        # text, blob, etc. stay as strings
+        return value
 
     def fetchall(self) -> list:
         return self._rows
