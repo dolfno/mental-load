@@ -72,6 +72,64 @@ class TestUpdateTask:
 
         assert result is None
 
+    def test_clears_urgency_label_when_set_to_none(self):
+        """Test that urgency_label can be explicitly cleared to None."""
+        existing_task = Task(
+            id=1,
+            name="Test",
+            recurrence=RecurrencePattern(type=RecurrenceType.DAILY),
+            urgency_label=Urgency.HIGH,
+        )
+
+        mock_repo = MagicMock()
+        mock_repo.get_by_id.return_value = existing_task
+        mock_repo.save.return_value = existing_task
+
+        use_case = UpdateTask(mock_repo)
+        result = use_case.execute(task_id=1, urgency_label=None)
+
+        assert result.urgency_label is None
+        mock_repo.save.assert_called_once()
+
+    def test_clears_autocomplete_when_set_to_false(self):
+        """Test that autocomplete can be explicitly set to False."""
+        existing_task = Task(
+            id=1,
+            name="Test",
+            recurrence=RecurrencePattern(type=RecurrenceType.DAILY),
+            autocomplete=True,
+        )
+
+        mock_repo = MagicMock()
+        mock_repo.get_by_id.return_value = existing_task
+        mock_repo.save.return_value = existing_task
+
+        use_case = UpdateTask(mock_repo)
+        result = use_case.execute(task_id=1, autocomplete=False)
+
+        assert result.autocomplete is False
+        mock_repo.save.assert_called_once()
+
+    def test_preserves_urgency_label_when_not_provided(self):
+        """Test that urgency_label is not changed when not provided (using Ellipsis)."""
+        existing_task = Task(
+            id=1,
+            name="Test",
+            recurrence=RecurrencePattern(type=RecurrenceType.DAILY),
+            urgency_label=Urgency.HIGH,
+        )
+
+        mock_repo = MagicMock()
+        mock_repo.get_by_id.return_value = existing_task
+        mock_repo.save.return_value = existing_task
+
+        use_case = UpdateTask(mock_repo)
+        # Only update name, don't pass urgency_label (uses default ...)
+        result = use_case.execute(task_id=1, name="New Name")
+
+        # urgency_label should remain HIGH
+        assert result.urgency_label == Urgency.HIGH
+
 
 class TestCompleteTask:
     def test_completes_task_and_updates_due_date(self):

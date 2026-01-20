@@ -167,20 +167,22 @@ def update_task(
             time_of_day=request.recurrence.time_of_day,
         )
 
-    # Use model_fields_set to check if assigned_to_id was explicitly provided
+    # Use model_fields_set to check if fields were explicitly provided
     # This allows distinguishing between "not provided" and "set to null"
     assigned_to_id = ... if "assigned_to_id" not in request.model_fields_set else request.assigned_to_id
+    urgency_label = ... if "urgency_label" not in request.model_fields_set else request.urgency_label
+    autocomplete = ... if "autocomplete" not in request.model_fields_set else request.autocomplete
 
     use_case = UpdateTask(task_repo)
     task = use_case.execute(
         task_id=task_id,
         name=request.name,
         recurrence=recurrence,
-        urgency_label=request.urgency_label,
+        urgency_label=urgency_label,
         next_due=request.next_due,
         is_active=request.is_active,
         assigned_to_id=assigned_to_id,
-        autocomplete=request.autocomplete,
+        autocomplete=autocomplete,
     )
 
     if task is None:
