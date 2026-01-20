@@ -182,4 +182,131 @@ test.describe('Task Actions', () => {
     const newTaskCount = await page.locator('[data-testid="task-card"]').count();
     expect(newTaskCount).toBe(initialTaskCount - 1);
   });
+
+  test('bewerken button opens task edit modal', async ({ page }) => {
+    // Find the first task card
+    const taskCard = page.locator('[data-testid="task-card"]').first();
+
+    // Skip if no tasks exist
+    if (await taskCard.count() === 0) {
+      test.skip();
+      return;
+    }
+
+    // Get the task name
+    const taskName = await taskCard.locator('h3').textContent();
+
+    // Click the overflow menu (⋮)
+    const overflowButton = taskCard.getByRole('button', { name: '⋮' });
+    await overflowButton.click();
+
+    // Click "Bewerken" in the dropdown
+    const bewerkenOption = page.getByRole('button', { name: 'Bewerken' });
+    await expect(bewerkenOption).toBeVisible();
+    await bewerkenOption.click();
+
+    // Verify modal is open with the task form
+    const modal = page.locator('[role="dialog"]');
+    await expect(modal).toBeVisible();
+
+    // Verify the task name is in the form
+    const nameInput = modal.locator('input[type="text"]').first();
+    await expect(nameInput).toHaveValue(taskName!);
+  });
+
+  test('edit modal shows confirmation when closing with unsaved changes', async ({ page }) => {
+    // Find the first task card
+    const taskCard = page.locator('[data-testid="task-card"]').first();
+
+    // Skip if no tasks exist
+    if (await taskCard.count() === 0) {
+      test.skip();
+      return;
+    }
+
+    // Open edit modal via overflow menu
+    const overflowButton = taskCard.getByRole('button', { name: '⋮' });
+    await overflowButton.click();
+    await page.getByRole('button', { name: 'Bewerken' }).click();
+
+    // Verify modal is open
+    const modal = page.locator('[role="dialog"]');
+    await expect(modal).toBeVisible();
+
+    // Make a change to the form
+    const nameInput = modal.locator('input[type="text"]').first();
+    const originalValue = await nameInput.inputValue();
+    await nameInput.fill(originalValue + ' (gewijzigd)');
+
+    // Set up dialog handler to dismiss the confirmation
+    page.on('dialog', async dialog => {
+      expect(dialog.type()).toBe('confirm');
+      expect(dialog.message()).toContain('niet-opgeslagen wijzigingen');
+      await dialog.dismiss(); // Cancel closing
+    });
+
+    // Try to close by clicking outside the modal
+    await page.locator('.fixed.inset-0.z-50').click({ position: { x: 10, y: 10 } });
+
+    // Modal should still be visible because we dismissed the confirm dialog
+    await expect(modal).toBeVisible();
+  });
+
+  test('edit modal saves changes on submit', async ({ page }) => {
+    // Find the first task card
+    const taskCard = page.locator('[data-testid="task-card"]').first();
+
+    // Skip if no tasks exist
+    if (await taskCard.count() === 0) {
+      test.skip();
+      return;
+    }
+
+    // Get original task name
+    const originalName = await taskCard.locator('h3').textContent();
+
+    // Open edit modal
+    const overflowButton = taskCard.getByRole('button', { name: '⋮' });
+    await overflowButton.click();
+    await page.getByRole('button', { name: 'Bewerken' }).click();
+
+    // Verify modal is open
+    const modal = page.locator('[role="dialog"]');
+    await expect(modal).toBeVisible();
+
+    // Change the task name
+    const nameInput = modal.locator('input[type="text"]').first();
+    const newName = originalName + ' (e2e test)';
+    await nameInput.fill(newName);
+
+    // Listen for the PUT request
+    const responsePromise = page.waitForResponse(
+      response => response.url().includes('/api/tasks/') &&
+                  response.request().method() === 'PUT'
+    );
+
+    // Submit the form
+    await modal.getByRole('button', { name: 'Opslaan' }).click();
+
+    // Wait for the API response
+    const response = await responsePromise;
+    expect(response.status()).toBe(200);
+
+    // Modal should close
+    await expect(modal).not.toBeVisible();
+
+    // Verify the task name was updated
+    await page.waitForTimeout(500);
+    const updatedTaskCard = page.locator('[data-testid="task-card"]').filter({ hasText: newName });
+    await expect(updatedTaskCard).toBeVisible();
+
+    // Restore original name for other tests
+    const restoreOverflow = updatedTaskCard.getByRole('button', { name: '⋮' });
+    await restoreOverflow.click();
+    await page.getByRole('button', { name: 'Bewerken' }).click();
+    await expect(modal).toBeVisible();
+    await modal.locator('input[type="text"]').first().fill(originalName!);
+    await modal.getByRole('button', { name: 'Opslaan' }).click();
+    await expect(modal).not.toBeVisible();
+  });
 });
