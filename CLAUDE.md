@@ -11,9 +11,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Backend (in `/backend`)
 ```bash
 uv sync                                              # Install dependencies
-alembic upgrade head                                 # Run database migrations
+uv run alembic upgrade head                                 # Run database migrations
 uv run pytest                                        # Run all tests
-uv run pytest tests/unit/test_domain.py -k "test_name"  # Run single test
 uv run uvicorn src.presentation.main:app --reload   # Dev server (port 8000)
 ```
 
