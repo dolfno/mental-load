@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 def create_default_admin_if_needed() -> bool:
     """
-    Create a default admin user if no registered users exist.
+    Create a default admin user if one doesn't already exist.
 
     Reads configuration from environment variables:
     - ADMIN_EMAIL: Email for the admin user (required)
@@ -31,16 +31,6 @@ def create_default_admin_if_needed() -> bool:
 
     db = get_database()
     member_repo = SQLiteMemberRepository(db)
-
-    # Check if any users with email/password exist (registered users)
-    all_members = member_repo.get_all()
-    registered_users = [m for m in all_members if m.email is not None]
-
-    if registered_users:
-        logger.info("Registered users already exist. Skipping auto-admin creation.")
-        return False
-
-    # Check if user with this email already exists
     existing = member_repo.get_by_email(admin_email)
     if existing:
         logger.info(f"User with email {admin_email} already exists. Skipping auto-admin creation.")
