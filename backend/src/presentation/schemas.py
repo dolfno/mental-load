@@ -98,3 +98,14 @@ class CreateUserRequest(BaseModel):
     name: str
     email: str
     password: str
+
+
+# Note schemas
+class NoteUpdateRequest(BaseModel):
+    content: str
+
+
+class NoteResponse(BaseModel):
+    id: int
+    content: str
+    updated_at: datetime

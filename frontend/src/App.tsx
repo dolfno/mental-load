@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Header } from './components/Header';
 import { Dashboard } from './components/Dashboard';
 import { AdminPage } from './components/AdminPage';
+import { NotepadPage } from './components/NotepadPage';
 import { LoginPage } from './components/LoginPage';
 import { RegisterPage } from './components/RegisterPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -87,6 +88,7 @@ function AuthenticatedApp() {
       <Header />
       <Routes>
         <Route path="/" element={<Dashboard members={members} />} />
+        <Route path="/kladblok" element={<NotepadPage />} />
         <Route
           path="/beheer"
           element={

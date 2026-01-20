@@ -1,4 +1,4 @@
-import type { Task, TaskCreateRequest, TaskUpdateRequest, Member, TaskCompletion, User, AuthResponse, LoginRequest, RegisterRequest } from './types';
+import type { Task, TaskCreateRequest, TaskUpdateRequest, Member, TaskCompletion, User, AuthResponse, LoginRequest, RegisterRequest, Note, NoteUpdateRequest } from './types';
 
 // Use VITE_API_URL for production deployment, defaults to /api for local development
 const BASE_URL = import.meta.env.VITE_API_URL || '/api';
@@ -141,5 +141,15 @@ export const api = {
       }),
 
     me: () => fetchJSON<User>(`${BASE_URL}/auth/me`),
+  },
+
+  notes: {
+    get: () => fetchJSON<Note>(`${BASE_URL}/notes`),
+
+    update: (data: NoteUpdateRequest) =>
+      fetchJSON<Note>(`${BASE_URL}/notes`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }),
   },
 };

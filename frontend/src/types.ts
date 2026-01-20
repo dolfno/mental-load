@@ -88,3 +88,14 @@ export interface RegisterRequest {
   email: string;
   password: string;
 }
+
+// Note types
+export interface Note {
+  id: number;
+  content: string;
+  updated_at: string;
+}
+
+export interface NoteUpdateRequest {
+  content: string;
+}
