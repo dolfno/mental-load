@@ -5,32 +5,36 @@ const testEmail = 'tasktest@example.com';
 const testPassword = 'testpassword123';
 const testName = 'Task Tester';
 
+// Admin API key for creating test users (must match backend ADMIN_API_KEY env var)
+const ADMIN_API_KEY = process.env.ADMIN_API_KEY || 'test-admin-key';
+
 test.describe('Task Actions', () => {
-  test.beforeEach(async ({ page }) => {
-    // Go to login page first
-    await page.goto('/login');
-
-    // Try to register - if user already exists, this will fail and we'll login
-    const registerResponse = await page.request.post('/api/auth/register', {
-      data: { name: testName, email: testEmail, password: testPassword }
+  test.beforeAll(async ({ request }) => {
+    // Create test user via admin API (will fail silently if user already exists)
+    await request.post('/api/admin/users', {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Admin-Api-Key': ADMIN_API_KEY,
+      },
+      data: {
+        name: testName,
+        email: testEmail,
+        password: testPassword,
+      },
     }).catch(() => null);
+  });
 
-    if (registerResponse?.ok()) {
-      // New user registered, store token and reload
-      const data = await registerResponse.json();
-      await page.evaluate((token) => localStorage.setItem('auth_token', token), data.access_token);
-      await page.goto('/');
-    } else {
-      // User exists, login via form
-      await page.fill('input[name="email"]', testEmail);
-      await page.fill('input[name="password"]', testPassword);
+  test.beforeEach(async ({ page }) => {
+    // Go to login page and login
+    await page.goto('/login');
+    await page.fill('input[name="email"]', testEmail);
+    await page.fill('input[name="password"]', testPassword);
 
-      const responsePromise = page.waitForResponse(
-        response => response.url().includes('/api/auth/login')
-      );
-      await page.click('button[type="submit"]');
-      await responsePromise;
-    }
+    const responsePromise = page.waitForResponse(
+      response => response.url().includes('/api/auth/login')
+    );
+    await page.click('button[type="submit"]');
+    await responsePromise;
 
     // Wait for dashboard to load
     await expect(page).toHaveURL('/', { timeout: 10000 });
