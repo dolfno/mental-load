@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import date
 
-from src.domain import Task, HouseholdMember, TaskCompletion
+from src.domain import Task, HouseholdMember, TaskCompletion, Note
 
 
 class TaskRepository(ABC):
@@ -67,4 +67,16 @@ class CompletionRepository(ABC):
 
     @abstractmethod
     def save(self, completion: TaskCompletion) -> TaskCompletion:
+        pass
+
+
+class NoteRepository(ABC):
+    @abstractmethod
+    def get(self) -> Note | None:
+        """Get the shared household note."""
+        pass
+
+    @abstractmethod
+    def save(self, note: Note) -> Note:
+        """Save the shared household note."""
         pass

@@ -1,4 +1,4 @@
-from .interfaces import TaskRepository, MemberRepository, CompletionRepository
+from .interfaces import TaskRepository, MemberRepository, CompletionRepository, NoteRepository
 from .task_usecases import (
     CreateTask,
     UpdateTask,
@@ -18,11 +18,13 @@ from .member_usecases import (
     GetCompletionHistory,
 )
 from .auth_usecases import RegisterUser, LoginUser, GetCurrentUser
+from .note_usecases import GetNote, UpdateNote
 
 __all__ = [
     "TaskRepository",
     "MemberRepository",
     "CompletionRepository",
+    "NoteRepository",
     "CreateTask",
     "UpdateTask",
     "CompleteTask",
@@ -40,4 +42,6 @@ __all__ = [
     "RegisterUser",
     "LoginUser",
     "GetCurrentUser",
+    "GetNote",
+    "UpdateNote",
 ]

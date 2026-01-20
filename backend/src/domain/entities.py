@@ -31,3 +31,10 @@ class TaskCompletion:
     task_id: int
     completed_at: datetime
     completed_by_id: int | None = None
+
+
+@dataclass
+class Note:
+    id: int | None
+    content: str
+    updated_at: datetime

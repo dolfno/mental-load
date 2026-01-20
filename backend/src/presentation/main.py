@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.infrastructure import create_default_admin_if_needed
-from .routes import tasks_router, members_router, history_router, auth_router, admin_router
+from .routes import tasks_router, members_router, history_router, auth_router, admin_router, notes_router
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -54,6 +54,7 @@ app.include_router(admin_router)
 app.include_router(tasks_router)
 app.include_router(members_router)
 app.include_router(history_router)
+app.include_router(notes_router)
 
 
 @app.get("/")

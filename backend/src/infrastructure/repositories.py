@@ -5,12 +5,13 @@ from src.domain import (
     Task,
     HouseholdMember,
     TaskCompletion,
+    Note,
     RecurrencePattern,
     RecurrenceType,
     Urgency,
     TimeOfDay,
 )
-from src.application import TaskRepository, MemberRepository, CompletionRepository
+from src.application import TaskRepository, MemberRepository, CompletionRepository, NoteRepository
 from .database import Database
 
 
@@ -293,3 +294,35 @@ class SQLiteCompletionRepository(CompletionRepository):
             )
             completion.id = completion_id
         return completion
+
+
+class SQLiteNoteRepository(NoteRepository):
+    def __init__(self, db: Database):
+        self.db = db
+
+    def _row_to_note(self, row) -> Note:
+        return Note(
+            id=row["id"],
+            content=row["content"],
+            updated_at=datetime.fromisoformat(row["updated_at"]),
+        )
+
+    def get(self) -> Note | None:
+        rows = self.db.execute("SELECT * FROM notes LIMIT 1")
+        if not rows:
+            return None
+        return self._row_to_note(rows[0])
+
+    def save(self, note: Note) -> Note:
+        if note.id is None:
+            note_id = self.db.execute_returning_id(
+                "INSERT INTO notes (content, updated_at) VALUES (?, ?)",
+                (note.content, note.updated_at.isoformat()),
+            )
+            note.id = note_id
+        else:
+            self.db.execute(
+                "UPDATE notes SET content = ?, updated_at = ? WHERE id = ?",
+                (note.content, note.updated_at.isoformat(), note.id),
+            )
+        return note
