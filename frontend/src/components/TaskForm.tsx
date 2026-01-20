@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { Task, TaskCreateRequest, TaskUpdateRequest, RecurrenceType, Urgency, TimeOfDay, Member } from '../types';
 
 interface TaskFormProps {
@@ -6,6 +6,7 @@ interface TaskFormProps {
   members?: Member[];
   onSubmit: (data: TaskCreateRequest | TaskUpdateRequest) => void;
   onCancel: () => void;
+  onFormChange?: (hasChanges: boolean) => void;
 }
 
 const recurrenceTypes: { value: RecurrenceType; label: string }[] = [
@@ -20,7 +21,7 @@ const recurrenceTypes: { value: RecurrenceType; label: string }[] = [
 
 const dayNames = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
 
-export function TaskForm({ task, members = [], onSubmit, onCancel }: TaskFormProps) {
+export function TaskForm({ task, members = [], onSubmit, onCancel, onFormChange }: TaskFormProps) {
   const isEditMode = !!task;
 
   const [name, setName] = useState(task?.name ?? '');
@@ -32,6 +33,36 @@ export function TaskForm({ task, members = [], onSubmit, onCancel }: TaskFormPro
   const [assignedToId, setAssignedToId] = useState<number | ''>(task?.assigned_to_id ?? '');
   const [autocomplete, setAutocomplete] = useState(task?.autocomplete ?? false);
 
+  // Track initial values to detect changes (use ref to avoid recreating on every render)
+  const initialValuesRef = useRef({
+    name: task?.name ?? '',
+    recurrenceType: task?.recurrence.type ?? 'weekly',
+    interval: task?.recurrence.interval ?? 1,
+    selectedDays: JSON.stringify(task?.recurrence.days ?? []),
+    timeOfDay: task?.recurrence.time_of_day ?? '',
+    urgency: task?.urgency_label ?? '',
+    assignedToId: task?.assigned_to_id ?? '',
+    autocomplete: task?.autocomplete ?? false,
+  });
+
+  // Notify parent of form changes
+  useEffect(() => {
+    if (!onFormChange) return;
+
+    const initial = initialValuesRef.current;
+    const hasChanges =
+      name !== initial.name ||
+      recurrenceType !== initial.recurrenceType ||
+      interval !== initial.interval ||
+      JSON.stringify(selectedDays) !== initial.selectedDays ||
+      timeOfDay !== initial.timeOfDay ||
+      urgency !== initial.urgency ||
+      assignedToId !== initial.assignedToId ||
+      autocomplete !== initial.autocomplete;
+
+    onFormChange(hasChanges);
+  }, [name, recurrenceType, interval, selectedDays, timeOfDay, urgency, assignedToId, autocomplete, onFormChange]);
+
   useEffect(() => {
     if (task) {
       setName(task.name);
@@ -42,6 +73,17 @@ export function TaskForm({ task, members = [], onSubmit, onCancel }: TaskFormPro
       setUrgency(task.urgency_label ?? '');
       setAssignedToId(task.assigned_to_id ?? '');
       setAutocomplete(task.autocomplete ?? false);
+      // Update initial values ref when task changes
+      initialValuesRef.current = {
+        name: task.name,
+        recurrenceType: task.recurrence.type,
+        interval: task.recurrence.interval,
+        selectedDays: JSON.stringify(task.recurrence.days ?? []),
+        timeOfDay: task.recurrence.time_of_day ?? '',
+        urgency: task.urgency_label ?? '',
+        assignedToId: task.assigned_to_id ?? '',
+        autocomplete: task.autocomplete ?? false,
+      };
     }
   }, [task]);
 
