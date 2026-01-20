@@ -1,9 +1,13 @@
+import os
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from dotenv import load_dotenv
+from sqlalchemy import create_engine, pool
 
 from alembic import context
+
+# Load environment variables
+load_dotenv()
 
 config = context.config
 
@@ -13,9 +17,24 @@ if config.config_file_name is not None:
 target_metadata = None
 
 
+def get_database_url() -> str:
+    """Get database URL from environment or fall back to config file."""
+    turso_url = os.getenv("TURSO_DATABASE_URL")
+    turso_token = os.getenv("TURSO_AUTH_TOKEN")
+
+    if turso_url and turso_token:
+        # Convert libsql:// to the sqlalchemy-libsql format
+        # libsql://db-name.turso.io -> sqlite+libsql://db-name.turso.io
+        db_url = turso_url.replace("libsql://", "sqlite+libsql://")
+        return f"{db_url}?authToken={turso_token}&secure=true"
+
+    # Fall back to alembic.ini config (local SQLite)
+    return config.get_main_option("sqlalchemy.url")
+
+
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode."""
-    url = config.get_main_option("sqlalchemy.url")
+    url = get_database_url()
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -29,11 +48,8 @@ def run_migrations_offline() -> None:
 
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-    )
+    url = get_database_url()
+    connectable = create_engine(url, poolclass=pool.NullPool)
 
     with connectable.connect() as connection:
         context.configure(
