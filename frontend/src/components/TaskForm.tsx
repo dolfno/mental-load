@@ -7,6 +7,7 @@ interface TaskFormProps {
   onSubmit: (data: TaskCreateRequest | TaskUpdateRequest) => void;
   onCancel: () => void;
   onFormChange?: (hasChanges: boolean) => void;
+  error?: string | null;
 }
 
 const recurrenceTypes: { value: RecurrenceType; label: string }[] = [
@@ -21,7 +22,7 @@ const recurrenceTypes: { value: RecurrenceType; label: string }[] = [
 
 const dayNames = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
 
-export function TaskForm({ task, members = [], onSubmit, onCancel, onFormChange }: TaskFormProps) {
+export function TaskForm({ task, members = [], onSubmit, onCancel, onFormChange, error }: TaskFormProps) {
   const isEditMode = !!task;
 
   const [name, setName] = useState(task?.name ?? '');
@@ -121,6 +122,12 @@ export function TaskForm({ task, members = [], onSubmit, onCancel, onFormChange 
       <h2 className="text-xl font-semibold text-gray-800">
         {isEditMode ? 'Taak bewerken' : 'Nieuwe taak'}
       </h2>
+
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          {error}
+        </div>
+      )}
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Naam</label>
