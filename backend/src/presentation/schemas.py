@@ -18,6 +18,7 @@ class TaskCreateRequest(BaseModel):
     next_due: date | None = None
     assigned_to_id: int | None = None
     autocomplete: bool = False
+    description: str | None = None
 
 
 class TaskUpdateRequest(BaseModel):
@@ -31,6 +32,7 @@ class TaskUpdateRequest(BaseModel):
     assigned_to_id: int | None = None
     # Use model_fields_set to check if assigned_to_id was explicitly provided
     autocomplete: bool | None = None
+    description: str | None = None
 
 
 class TaskResponse(BaseModel):
@@ -45,6 +47,7 @@ class TaskResponse(BaseModel):
     assigned_to_id: int | None
     assigned_to_name: str | None
     autocomplete: bool
+    description: str | None
 
 
 class CompleteTaskRequest(BaseModel):

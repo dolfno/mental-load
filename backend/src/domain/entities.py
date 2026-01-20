@@ -15,6 +15,7 @@ class Task:
     is_active: bool = True
     assigned_to_id: int | None = None
     autocomplete: bool = False
+    description: str | None = None
 
 
 @dataclass

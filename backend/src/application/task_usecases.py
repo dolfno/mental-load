@@ -31,6 +31,7 @@ class CreateTask:
         next_due: date | None = None,
         assigned_to_id: int | None = None,
         autocomplete: bool = False,
+        description: str | None = None,
     ) -> Task:
         task = Task(
             id=None,
@@ -40,6 +41,7 @@ class CreateTask:
             next_due=next_due,
             assigned_to_id=assigned_to_id,
             autocomplete=autocomplete,
+            description=description,
         )
         return self.task_repo.save(task)
 
@@ -58,6 +60,7 @@ class UpdateTask:
         is_active: bool | None = None,
         assigned_to_id: int | None = ...,
         autocomplete: bool | None = ...,
+        description: str | None = ...,
     ) -> Task | None:
         task = self.task_repo.get_by_id(task_id)
         if task is None:
@@ -77,6 +80,8 @@ class UpdateTask:
             task.assigned_to_id = assigned_to_id
         if autocomplete is not ...:
             task.autocomplete = autocomplete
+        if description is not ...:
+            task.description = description
 
         return self.task_repo.save(task)
 

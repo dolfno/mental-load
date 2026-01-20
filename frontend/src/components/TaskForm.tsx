@@ -25,6 +25,7 @@ export function TaskForm({ task, members = [], onSubmit, onCancel, onFormChange 
   const isEditMode = !!task;
 
   const [name, setName] = useState(task?.name ?? '');
+  const [description, setDescription] = useState(task?.description ?? '');
   const [recurrenceType, setRecurrenceType] = useState<RecurrenceType>(task?.recurrence.type ?? 'weekly');
   const [interval, setInterval] = useState(task?.recurrence.interval ?? 1);
   const [selectedDays, setSelectedDays] = useState<number[]>(task?.recurrence.days ?? []);
@@ -66,6 +67,7 @@ export function TaskForm({ task, members = [], onSubmit, onCancel, onFormChange 
   useEffect(() => {
     if (task) {
       setName(task.name);
+      setDescription(task.description ?? '');
       setRecurrenceType(task.recurrence.type);
       setInterval(task.recurrence.interval);
       setSelectedDays(task.recurrence.days ?? []);
@@ -102,6 +104,7 @@ export function TaskForm({ task, members = [], onSubmit, onCancel, onFormChange 
       urgency_label: urgency || null,
       assigned_to_id: assignedToId || null,
       autocomplete,
+      description: description.trim() || null,
     };
 
     onSubmit(data);
@@ -128,6 +131,17 @@ export function TaskForm({ task, members = [], onSubmit, onCancel, onFormChange 
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Bijv. Stofzuigen"
           required
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Beschrijving (optioneel)</label>
+        <textarea
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Extra context of instructies..."
+          rows={2}
         />
       </div>
 
