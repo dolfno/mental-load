@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi.responses import JSONResponse
 
 from src.domain import HouseholdMember
 from src.application import CreateMember, GetAllMembers, DeleteMember
-from src.infrastructure import get_database, SQLiteMemberRepository
+from src.infrastructure import get_database, SQLiteMemberRepository, SQLiteCompletionRepository, SQLiteTaskRepository
 from ..schemas import MemberCreateRequest, MemberResponse
 from ..dependencies import get_current_user
 
@@ -38,10 +39,23 @@ def create_member(
 @router.delete("/{member_id}", status_code=204)
 def delete_member(
     member_id: int,
+    force: bool = Query(False, description="Force deletion by anonymizing history"),
     current_user: HouseholdMember = Depends(get_current_user),
     member_repo: SQLiteMemberRepository = Depends(get_member_repo),
 ):
-    use_case = DeleteMember(member_repo)
-    success = use_case.execute(member_id=member_id)
-    if not success:
-        raise HTTPException(status_code=404, detail="Member not found")
+    db = get_database()
+    completion_repo = SQLiteCompletionRepository(db)
+    task_repo = SQLiteTaskRepository(db)
+
+    use_case = DeleteMember(member_repo, completion_repo, task_repo)
+    result = use_case.execute(member_id=member_id, force=force)
+
+    if result.requires_confirmation and result.reference_info:
+        return JSONResponse(
+            status_code=409,
+            content={
+                "detail": "Member has associated data. Use force=true to delete and anonymize history.",
+                "completion_count": result.reference_info.completion_count,
+                "assignment_count": result.reference_info.assignment_count,
+            },
+        )

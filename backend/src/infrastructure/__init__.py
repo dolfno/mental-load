@@ -5,6 +5,7 @@ from .repositories import (
     SQLiteCompletionRepository,
 )
 from .auth import AuthService
+from .startup import create_default_admin_if_needed
 
 __all__ = [
     "Database",
@@ -14,4 +15,5 @@ __all__ = [
     "SQLiteMemberRepository",
     "SQLiteCompletionRepository",
     "AuthService",
+    "create_default_admin_if_needed",
 ]

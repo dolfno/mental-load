@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { Routes, Route } from 'react-router';
 import type { Member } from './types';
-import { api } from './api';
+import { api, ApiError } from './api';
+import type { MemberDeleteConflict } from './api';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Header } from './components/Header';
 import { Dashboard } from './components/Dashboard';
@@ -48,7 +49,28 @@ function AuthenticatedApp() {
       await api.members.delete(id);
       await loadMembers();
     } catch (err) {
-      console.error('Failed to delete member:', err);
+      if (err instanceof ApiError && err.status === 409) {
+        const conflict = err.data as MemberDeleteConflict;
+        const parts: string[] = [];
+        if (conflict.completion_count > 0) {
+          parts.push(`${conflict.completion_count} voltooide ${conflict.completion_count === 1 ? 'taak' : 'taken'}`);
+        }
+        if (conflict.assignment_count > 0) {
+          parts.push(`${conflict.assignment_count} toegewezen ${conflict.assignment_count === 1 ? 'taak' : 'taken'}`);
+        }
+        const message = `Dit gezinslid heeft ${parts.join(' en ')}. Wil je deze verwijderen en de geschiedenis anonimiseren?`;
+
+        if (window.confirm(message)) {
+          try {
+            await api.members.delete(id, true);
+            await loadMembers();
+          } catch (forceErr) {
+            console.error('Failed to force delete member:', forceErr);
+          }
+        }
+      } else {
+        console.error('Failed to delete member:', err);
+      }
     }
   };
 

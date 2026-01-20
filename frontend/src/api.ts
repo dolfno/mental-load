@@ -3,6 +3,25 @@ import type { Task, TaskCreateRequest, TaskUpdateRequest, Member, TaskCompletion
 // Use VITE_API_URL for production deployment, defaults to /api for local development
 const BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
+// Error types for better error handling
+export interface MemberDeleteConflict {
+  detail: string;
+  completion_count: number;
+  assignment_count: number;
+}
+
+export class ApiError extends Error {
+  status: number;
+  data?: unknown;
+
+  constructor(message: string, status: number, data?: unknown) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.data = data;
+  }
+}
+
 // Token management
 export function getToken(): string | null {
   return localStorage.getItem('auth_token');
@@ -31,11 +50,18 @@ async function fetchJSON<T>(url: string, options?: RequestInit): Promise<T> {
   if (response.status === 401 && !url.includes('/auth/login') && !url.includes('/auth/register')) {
     clearToken();
     window.location.href = '/login';
-    throw new Error('Unauthorized');
+    throw new ApiError('Unauthorized', 401);
   }
 
   if (!response.ok) {
-    throw new Error(`HTTP error: ${response.status}`);
+    // Try to parse error response body for detailed error info
+    let errorData: unknown;
+    try {
+      errorData = await response.json();
+    } catch {
+      // Ignore JSON parse errors
+    }
+    throw new ApiError(`HTTP error: ${response.status}`, response.status, errorData);
   }
   // Handle 204 No Content responses (e.g., DELETE)
   if (response.status === 204) {
@@ -91,8 +117,8 @@ export const api = {
         body: JSON.stringify({ name }),
       }),
 
-    delete: (memberId: number) =>
-      fetchJSON<void>(`${BASE_URL}/members/${memberId}`, {
+    delete: (memberId: number, force: boolean = false) =>
+      fetchJSON<void>(`${BASE_URL}/members/${memberId}?force=${force}`, {
         method: 'DELETE',
       }),
   },

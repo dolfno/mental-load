@@ -154,6 +154,22 @@ class SQLiteTaskRepository(TaskRepository):
         self.db.execute("UPDATE tasks SET is_active = 0 WHERE id = ?", (task_id,))
         return True
 
+    def count_by_assigned_member(self, member_id: int) -> int:
+        rows = self.db.execute(
+            "SELECT COUNT(*) as count FROM tasks WHERE assigned_to_id = ?",
+            (member_id,),
+        )
+        return rows[0]["count"] if rows else 0
+
+    def clear_member_assignments(self, member_id: int) -> int:
+        """Set assigned_to_id to NULL for all tasks assigned to this member. Returns count of affected rows."""
+        count = self.count_by_assigned_member(member_id)
+        self.db.execute(
+            "UPDATE tasks SET assigned_to_id = NULL WHERE assigned_to_id = ?",
+            (member_id,),
+        )
+        return count
+
 
 class SQLiteMemberRepository(MemberRepository):
     def __init__(self, db: Database):
@@ -246,6 +262,22 @@ class SQLiteCompletionRepository(CompletionRepository):
             (member_id,),
         )
         return [self._row_to_completion(row) for row in rows]
+
+    def count_by_member(self, member_id: int) -> int:
+        rows = self.db.execute(
+            "SELECT COUNT(*) as count FROM task_completions WHERE completed_by_id = ?",
+            (member_id,),
+        )
+        return rows[0]["count"] if rows else 0
+
+    def clear_member_references(self, member_id: int) -> int:
+        """Set completed_by_id to NULL for all completions by this member. Returns count of affected rows."""
+        count = self.count_by_member(member_id)
+        self.db.execute(
+            "UPDATE task_completions SET completed_by_id = NULL WHERE completed_by_id = ?",
+            (member_id,),
+        )
+        return count
 
     def save(self, completion: TaskCompletion) -> TaskCompletion:
         if completion.id is None:

@@ -13,6 +13,8 @@ from .member_usecases import (
     CreateMember,
     GetAllMembers,
     DeleteMember,
+    DeleteMemberResult,
+    MemberReferenceInfo,
     GetCompletionHistory,
 )
 from .auth_usecases import RegisterUser, LoginUser, GetCurrentUser
@@ -32,6 +34,8 @@ __all__ = [
     "CreateMember",
     "GetAllMembers",
     "DeleteMember",
+    "DeleteMemberResult",
+    "MemberReferenceInfo",
     "GetCompletionHistory",
     "RegisterUser",
     "LoginUser",
