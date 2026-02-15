@@ -35,21 +35,23 @@ npm run test:e2e:ui  # Run e2e tests with interactive UI
 ```
 backend/src/
 ├── domain/          # Pure business rules, no dependencies
-│   ├── entities.py      # Task, HouseholdMember, TaskCompletion, Note
+│   ├── entities.py      # Task, HouseholdMember, TaskCompletion, Note, ChatMessage
 │   ├── value_objects.py # RecurrencePattern, Urgency, RecurrenceType, TimeOfDay
 │   └── services.py      # Due date calculation, urgency calculation
 ├── application/     # Use cases, depends only on domain
 │   ├── interfaces.py    # Repository abstractions
 │   ├── task_usecases.py
 │   ├── member_usecases.py
-│   └── note_usecases.py
+│   ├── note_usecases.py
+│   └── chat_usecases.py
 ├── infrastructure/  # External dependencies
 │   ├── database.py      # SQLite (local) / Turso HTTP API (prod)
 │   ├── repositories.py  # Concrete repository implementations
+│   ├── llm_service.py   # OpenAI-compatible LLM integration with function calling
 │   └── task_importer.py # Parse tasks.md into database
 └── presentation/    # FastAPI layer
     ├── main.py          # App setup with CORS
-    ├── routes/          # API endpoints (tasks, members, auth, admin, notes)
+    ├── routes/          # API endpoints (tasks, members, auth, admin, notes, chat)
     └── schemas.py       # Pydantic models
 ```
 
@@ -81,7 +83,7 @@ Migrations in `backend/alembic/versions/`.
 uv run alembic upgrade head  # Auto-detects SQLite (local) or Turso (if env vars set)
 ```
 
-Tables: `tasks`, `household_members`, `task_completions`, `notes`, `users`
+Tables: `tasks`, `household_members`, `task_completions`, `notes`, `users`, `chat_messages`
 
 ## Test Strategy
 
@@ -132,6 +134,29 @@ Base URL: `/api`. All endpoints except `/health` and `/api/auth/*` require JWT a
 
 **History**
 - `GET /api/history` - Task completion history
+
+**Chat (AI Assistant)**
+- `POST /api/chat` - Send message and get AI response
+- `GET /api/chat/history` - Get chat message history
+- `DELETE /api/chat/history` - Clear chat history
+
+## Environment Variables
+
+### Backend (`.env` in `/backend`)
+```bash
+JWT_SECRET_KEY=your-secret-key              # JWT signing key (required for auth)
+ADMIN_API_KEY=your-admin-api-key            # Admin user creation key
+CORS_ORIGINS=http://localhost:5173          # Comma-separated allowed origins
+
+# Database (optional - uses local SQLite if not set)
+TURSO_DATABASE_URL=libsql://xxxx.turso.io   # Turso database URL for production
+TURSO_AUTH_TOKEN=your-turso-token           # Turso auth token
+
+# AI Chat (required for chat feature)
+LLM_API_KEY=your-api-key                    # API key for OpenAI-compatible LLM provider
+LLM_BASE_URL=https://api.openai.com/v1     # Base URL for LLM API (optional, defaults to OpenAI)
+LLM_MODEL=gpt-4o-mini                      # Model name (optional, defaults to gpt-4o-mini)
+```
 
 ## Workflow
 
