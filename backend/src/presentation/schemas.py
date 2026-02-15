@@ -58,9 +58,14 @@ class MemberCreateRequest(BaseModel):
     name: str
 
 
+class MemberUpdateRequest(BaseModel):
+    color: str | None = None
+
+
 class MemberResponse(BaseModel):
     id: int
     name: str
+    color: str | None = None
 
 
 class TaskCompletionResponse(BaseModel):
@@ -112,3 +117,24 @@ class NoteResponse(BaseModel):
     id: int
     content: str
     updated_at: datetime
+
+
+# Routine schemas
+class RoutineCreateRequest(BaseModel):
+    name: str
+    days_of_week: list[int]
+    time_of_day: TimeOfDay
+    assigned_to_id: int | None = None
+
+
+class RoutineAssignRequest(BaseModel):
+    assigned_to_id: int | None = None
+
+
+class RoutineResponse(BaseModel):
+    id: int
+    name: str
+    day_of_week: int
+    time_of_day: TimeOfDay
+    assigned_to_id: int | None = None
+    sort_order: int = 0

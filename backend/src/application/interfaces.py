@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import date
 
-from src.domain import Task, HouseholdMember, TaskCompletion, Note
+from src.domain import Task, HouseholdMember, TaskCompletion, Note, WeeklyRoutine
 
 
 class TaskRepository(ABC):
@@ -79,4 +79,22 @@ class NoteRepository(ABC):
     @abstractmethod
     def save(self, note: Note) -> Note:
         """Save the shared household note."""
+        pass
+
+
+class WeeklyRoutineRepository(ABC):
+    @abstractmethod
+    def get_all(self) -> list[WeeklyRoutine]:
+        pass
+
+    @abstractmethod
+    def get_by_id(self, routine_id: int) -> WeeklyRoutine | None:
+        pass
+
+    @abstractmethod
+    def save(self, routine: WeeklyRoutine) -> WeeklyRoutine:
+        pass
+
+    @abstractmethod
+    def delete(self, routine_id: int) -> bool:
         pass

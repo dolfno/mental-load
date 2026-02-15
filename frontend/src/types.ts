@@ -57,6 +57,7 @@ export interface TaskUpdateRequest {
 export interface Member {
   id: number;
   name: string;
+  color?: string | null;
 }
 
 export interface TaskCompletion {
@@ -101,4 +102,21 @@ export interface Note {
 
 export interface NoteUpdateRequest {
   content: string;
+}
+
+// Weekly routine types
+export interface WeeklyRoutine {
+  id: number;
+  name: string;
+  day_of_week: number;
+  time_of_day: TimeOfDay;
+  assigned_to_id: number | null;
+  sort_order: number;
+}
+
+export interface RoutineCreateRequest {
+  name: string;
+  days_of_week: number[];
+  time_of_day: TimeOfDay;
+  assigned_to_id?: number | null;
 }

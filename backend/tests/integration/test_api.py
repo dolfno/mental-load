@@ -453,3 +453,148 @@ class TestAdminEndpoints:
             )
             assert response.status_code == 500
             assert response.json()["detail"] == "Admin API key not configured"
+
+
+class TestRoutineEndpoints:
+    def test_create_batch_routines(self, client, auth_headers):
+        """Creating routines for multiple days should return all created routines."""
+        response = client.post(
+            "/api/routines",
+            json={
+                "name": "Avondeten maken",
+                "days_of_week": [0, 1, 2, 3, 4],
+                "time_of_day": "evening",
+            },
+            headers=auth_headers,
+        )
+        assert response.status_code == 201
+        data = response.json()
+        assert len(data) == 5
+        assert all(r["name"] == "Avondeten maken" for r in data)
+        assert all(r["time_of_day"] == "evening" for r in data)
+        assert [r["day_of_week"] for r in data] == [0, 1, 2, 3, 4]
+
+    def test_list_routines(self, client, auth_headers):
+        """Listing routines should return all created routines."""
+        # Create some routines
+        client.post(
+            "/api/routines",
+            json={
+                "name": "School",
+                "days_of_week": [0, 1],
+                "time_of_day": "morning",
+            },
+            headers=auth_headers,
+        )
+
+        response = client.get("/api/routines", headers=auth_headers)
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) >= 2
+
+    def test_assign_routine(self, client, auth_headers):
+        """Assigning a member to a routine should update the assignment."""
+        # Create a member
+        member_response = client.post(
+            "/api/members", json={"name": "Alice"}, headers=auth_headers
+        )
+        member_id = member_response.json()["id"]
+
+        # Create a routine
+        create_response = client.post(
+            "/api/routines",
+            json={
+                "name": "Homework",
+                "days_of_week": [0],
+                "time_of_day": "evening",
+            },
+            headers=auth_headers,
+        )
+        routine_id = create_response.json()[0]["id"]
+
+        # Assign member
+        response = client.put(
+            f"/api/routines/{routine_id}/assign",
+            json={"assigned_to_id": member_id},
+            headers=auth_headers,
+        )
+        assert response.status_code == 200
+        assert response.json()["assigned_to_id"] == member_id
+
+    def test_unassign_routine(self, client, auth_headers):
+        """Unassigning a routine should set assigned_to_id to null."""
+        # Create a member and a routine with assignment
+        member_response = client.post(
+            "/api/members", json={"name": "Bob"}, headers=auth_headers
+        )
+        member_id = member_response.json()["id"]
+
+        create_response = client.post(
+            "/api/routines",
+            json={
+                "name": "Cooking",
+                "days_of_week": [2],
+                "time_of_day": "evening",
+                "assigned_to_id": member_id,
+            },
+            headers=auth_headers,
+        )
+        routine_id = create_response.json()[0]["id"]
+
+        # Unassign
+        response = client.put(
+            f"/api/routines/{routine_id}/assign",
+            json={"assigned_to_id": None},
+            headers=auth_headers,
+        )
+        assert response.status_code == 200
+        assert response.json()["assigned_to_id"] is None
+
+    def test_delete_routine(self, client, auth_headers):
+        """Deleting a routine should remove it from the list."""
+        # Create a routine
+        create_response = client.post(
+            "/api/routines",
+            json={
+                "name": "To Delete",
+                "days_of_week": [6],
+                "time_of_day": "morning",
+            },
+            headers=auth_headers,
+        )
+        routine_id = create_response.json()[0]["id"]
+
+        # Delete
+        response = client.delete(
+            f"/api/routines/{routine_id}", headers=auth_headers
+        )
+        assert response.status_code == 204
+
+        # Verify it's gone
+        list_response = client.get("/api/routines", headers=auth_headers)
+        routine_ids = [r["id"] for r in list_response.json()]
+        assert routine_id not in routine_ids
+
+    def test_assign_nonexistent_routine(self, client, auth_headers):
+        """Assigning a nonexistent routine should return 404."""
+        response = client.put(
+            "/api/routines/9999/assign",
+            json={"assigned_to_id": None},
+            headers=auth_headers,
+        )
+        assert response.status_code == 404
+
+    def test_routines_require_authentication(self, client):
+        """Routine endpoints should require authentication."""
+        response = client.get("/api/routines")
+        assert response.status_code in (401, 403)
+
+        response = client.post(
+            "/api/routines",
+            json={
+                "name": "Test",
+                "days_of_week": [0],
+                "time_of_day": "morning",
+            },
+        )
+        assert response.status_code in (401, 403)

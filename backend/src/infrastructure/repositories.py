@@ -6,12 +6,13 @@ from src.domain import (
     HouseholdMember,
     TaskCompletion,
     Note,
+    WeeklyRoutine,
     RecurrencePattern,
     RecurrenceType,
     Urgency,
     TimeOfDay,
 )
-from src.application import TaskRepository, MemberRepository, CompletionRepository, NoteRepository
+from src.application import TaskRepository, MemberRepository, CompletionRepository, NoteRepository, WeeklyRoutineRepository
 from .database import Database
 
 
@@ -185,6 +186,7 @@ class SQLiteMemberRepository(MemberRepository):
             name=row["name"],
             email=row["email"] if "email" in row.keys() else None,
             password_hash=row["password_hash"] if "password_hash" in row.keys() else None,
+            color=row["color"] if "color" in row.keys() else None,
         )
 
     def get_all(self) -> list[HouseholdMember]:
@@ -218,14 +220,14 @@ class SQLiteMemberRepository(MemberRepository):
     def save(self, member: HouseholdMember) -> HouseholdMember:
         if member.id is None:
             member_id = self.db.execute_returning_id(
-                "INSERT INTO household_members (name, email, password_hash) VALUES (?, ?, ?)",
-                (member.name, member.email, member.password_hash),
+                "INSERT INTO household_members (name, email, password_hash, color) VALUES (?, ?, ?, ?)",
+                (member.name, member.email, member.password_hash, member.color),
             )
             member.id = member_id
         else:
             self.db.execute(
-                "UPDATE household_members SET name = ?, email = ?, password_hash = ? WHERE id = ?",
-                (member.name, member.email, member.password_hash, member.id),
+                "UPDATE household_members SET name = ?, email = ?, password_hash = ?, color = ? WHERE id = ?",
+                (member.name, member.email, member.password_hash, member.color, member.id),
             )
         return member
 
@@ -329,3 +331,68 @@ class SQLiteNoteRepository(NoteRepository):
                 (note.content, note.updated_at.isoformat(), note.id),
             )
         return note
+
+
+class SQLiteWeeklyRoutineRepository(WeeklyRoutineRepository):
+    def __init__(self, db: Database):
+        self.db = db
+
+    def _row_to_routine(self, row) -> WeeklyRoutine:
+        return WeeklyRoutine(
+            id=row["id"],
+            name=row["name"],
+            day_of_week=row["day_of_week"],
+            time_of_day=TimeOfDay(row["time_of_day"]),
+            assigned_to_id=row["assigned_to_id"],
+            sort_order=row["sort_order"] or 0,
+        )
+
+    def get_all(self) -> list[WeeklyRoutine]:
+        rows = self.db.execute(
+            "SELECT * FROM weekly_routines ORDER BY day_of_week, time_of_day, sort_order"
+        )
+        return [self._row_to_routine(row) for row in rows]
+
+    def get_by_id(self, routine_id: int) -> WeeklyRoutine | None:
+        rows = self.db.execute(
+            "SELECT * FROM weekly_routines WHERE id = ?", (routine_id,)
+        )
+        if not rows:
+            return None
+        return self._row_to_routine(rows[0])
+
+    def save(self, routine: WeeklyRoutine) -> WeeklyRoutine:
+        if routine.id is None:
+            routine_id = self.db.execute_returning_id(
+                """INSERT INTO weekly_routines
+                   (name, day_of_week, time_of_day, assigned_to_id, sort_order)
+                   VALUES (?, ?, ?, ?, ?)""",
+                (
+                    routine.name,
+                    routine.day_of_week,
+                    routine.time_of_day.value,
+                    routine.assigned_to_id,
+                    routine.sort_order,
+                ),
+            )
+            routine.id = routine_id
+        else:
+            self.db.execute(
+                """UPDATE weekly_routines SET
+                   name = ?, day_of_week = ?, time_of_day = ?,
+                   assigned_to_id = ?, sort_order = ?
+                   WHERE id = ?""",
+                (
+                    routine.name,
+                    routine.day_of_week,
+                    routine.time_of_day.value,
+                    routine.assigned_to_id,
+                    routine.sort_order,
+                    routine.id,
+                ),
+            )
+        return routine
+
+    def delete(self, routine_id: int) -> bool:
+        self.db.execute("DELETE FROM weekly_routines WHERE id = ?", (routine_id,))
+        return True

@@ -1,4 +1,4 @@
-import type { Task, TaskCreateRequest, TaskUpdateRequest, Member, TaskCompletion, User, AuthResponse, LoginRequest, RegisterRequest, Note, NoteUpdateRequest } from './types';
+import type { Task, TaskCreateRequest, TaskUpdateRequest, Member, TaskCompletion, User, AuthResponse, LoginRequest, RegisterRequest, Note, NoteUpdateRequest, WeeklyRoutine, RoutineCreateRequest } from './types';
 
 // Use VITE_API_URL for production deployment, defaults to /api for local development
 const BASE_URL = import.meta.env.VITE_API_URL || '/api';
@@ -121,6 +121,12 @@ export const api = {
       fetchJSON<void>(`${BASE_URL}/members/${memberId}?force=${force}`, {
         method: 'DELETE',
       }),
+
+    updateColor: (memberId: number, color: string) =>
+      fetchJSON<Member>(`${BASE_URL}/members/${memberId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ color }),
+      }),
   },
 
   history: {
@@ -150,6 +156,27 @@ export const api = {
       fetchJSON<Note>(`${BASE_URL}/notes`, {
         method: 'PUT',
         body: JSON.stringify(data),
+      }),
+  },
+
+  routines: {
+    list: () => fetchJSON<WeeklyRoutine[]>(`${BASE_URL}/routines`),
+
+    create: (data: RoutineCreateRequest) =>
+      fetchJSON<WeeklyRoutine[]>(`${BASE_URL}/routines`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    assign: (routineId: number, assignedToId: number | null) =>
+      fetchJSON<WeeklyRoutine>(`${BASE_URL}/routines/${routineId}/assign`, {
+        method: 'PUT',
+        body: JSON.stringify({ assigned_to_id: assignedToId }),
+      }),
+
+    delete: (routineId: number) =>
+      fetchJSON<void>(`${BASE_URL}/routines/${routineId}`, {
+        method: 'DELETE',
       }),
   },
 };
