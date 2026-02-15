@@ -5,6 +5,7 @@ from .repositories import (
     SQLiteCompletionRepository,
     SQLiteNoteRepository,
     SQLiteWeeklyRoutineRepository,
+    SQLiteChatMessageRepository,
 )
 from .auth import AuthService
 from .startup import create_default_admin_if_needed
@@ -18,6 +19,7 @@ __all__ = [
     "SQLiteCompletionRepository",
     "SQLiteNoteRepository",
     "SQLiteWeeklyRoutineRepository",
+    "SQLiteChatMessageRepository",
     "AuthService",
     "create_default_admin_if_needed",
 ]

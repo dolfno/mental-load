@@ -138,3 +138,20 @@ class RoutineResponse(BaseModel):
     time_of_day: TimeOfDay
     assigned_to_id: int | None = None
     sort_order: int = 0
+
+
+# Chat schemas
+class ChatSendRequest(BaseModel):
+    message: str
+
+
+class ChatMessageResponse(BaseModel):
+    id: int
+    role: str
+    content: str
+    created_at: datetime
+
+
+class ChatResponse(BaseModel):
+    user_message: ChatMessageResponse
+    assistant_message: ChatMessageResponse

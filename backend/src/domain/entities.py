@@ -50,3 +50,12 @@ class Note:
     id: int | None
     content: str
     updated_at: datetime
+
+
+@dataclass
+class ChatMessage:
+    id: int | None
+    user_id: int
+    role: str  # "user" or "assistant"
+    content: str
+    created_at: datetime

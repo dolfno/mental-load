@@ -7,12 +7,13 @@ from src.domain import (
     TaskCompletion,
     Note,
     WeeklyRoutine,
+    ChatMessage,
     RecurrencePattern,
     RecurrenceType,
     Urgency,
     TimeOfDay,
 )
-from src.application import TaskRepository, MemberRepository, CompletionRepository, NoteRepository, WeeklyRoutineRepository
+from src.application import TaskRepository, MemberRepository, CompletionRepository, NoteRepository, WeeklyRoutineRepository, ChatMessageRepository
 from .database import Database
 
 
@@ -396,3 +397,37 @@ class SQLiteWeeklyRoutineRepository(WeeklyRoutineRepository):
     def delete(self, routine_id: int) -> bool:
         self.db.execute("DELETE FROM weekly_routines WHERE id = ?", (routine_id,))
         return True
+
+
+class SQLiteChatMessageRepository(ChatMessageRepository):
+    def __init__(self, db: Database):
+        self.db = db
+
+    def _row_to_message(self, row) -> ChatMessage:
+        return ChatMessage(
+            id=row["id"],
+            user_id=row["user_id"],
+            role=row["role"],
+            content=row["content"],
+            created_at=datetime.fromisoformat(row["created_at"]),
+        )
+
+    def get_by_user(self, user_id: int, limit: int = 50) -> list[ChatMessage]:
+        rows = self.db.execute(
+            "SELECT * FROM chat_messages WHERE user_id = ? ORDER BY created_at ASC LIMIT ?",
+            (user_id, limit),
+        )
+        return [self._row_to_message(row) for row in rows]
+
+    def save(self, message: ChatMessage) -> ChatMessage:
+        if message.id is None:
+            message_id = self.db.execute_returning_id(
+                """INSERT INTO chat_messages (user_id, role, content, created_at)
+                   VALUES (?, ?, ?, ?)""",
+                (message.user_id, message.role, message.content, message.created_at.isoformat()),
+            )
+            message.id = message_id
+        return message
+
+    def delete_by_user(self, user_id: int) -> None:
+        self.db.execute("DELETE FROM chat_messages WHERE user_id = ?", (user_id,))

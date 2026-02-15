@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import date
 
-from src.domain import Task, HouseholdMember, TaskCompletion, Note, WeeklyRoutine
+from src.domain import Task, HouseholdMember, TaskCompletion, Note, WeeklyRoutine, ChatMessage
 
 
 class TaskRepository(ABC):
@@ -97,4 +97,18 @@ class WeeklyRoutineRepository(ABC):
 
     @abstractmethod
     def delete(self, routine_id: int) -> bool:
+        pass
+
+
+class ChatMessageRepository(ABC):
+    @abstractmethod
+    def get_by_user(self, user_id: int, limit: int = 50) -> list[ChatMessage]:
+        pass
+
+    @abstractmethod
+    def save(self, message: ChatMessage) -> ChatMessage:
+        pass
+
+    @abstractmethod
+    def delete_by_user(self, user_id: int) -> None:
         pass
