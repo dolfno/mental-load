@@ -9,6 +9,7 @@ import { Header } from './components/Header';
 import { Dashboard } from './components/Dashboard';
 import { AdminPage } from './components/AdminPage';
 import { NotepadPage } from './components/NotepadPage';
+import { WeekplanPage } from './components/WeekplanPage';
 import { LoginPage } from './components/LoginPage';
 import { RegisterPage } from './components/RegisterPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -88,6 +89,7 @@ function AuthenticatedApp() {
       <Header />
       <Routes>
         <Route path="/" element={<Dashboard members={members} />} />
+        <Route path="/weekplan" element={<WeekplanPage members={members} onMembersChanged={loadMembers} />} />
         <Route path="/kladblok" element={<NotepadPage />} />
         <Route
           path="/beheer"
@@ -96,6 +98,7 @@ function AuthenticatedApp() {
               members={members}
               onAddMember={handleAddMember}
               onDeleteMember={handleDeleteMember}
+              onMembersChanged={loadMembers}
             />
           }
         />

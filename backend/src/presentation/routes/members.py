@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from src.domain import HouseholdMember
 from src.application import CreateMember, GetAllMembers, DeleteMember
 from src.infrastructure import get_database, SQLiteMemberRepository, SQLiteCompletionRepository, SQLiteTaskRepository
-from ..schemas import MemberCreateRequest, MemberResponse
+from ..schemas import MemberCreateRequest, MemberUpdateRequest, MemberResponse
 from ..dependencies import get_current_user
 
 router = APIRouter(prefix="/api/members", tags=["members"])
@@ -22,7 +22,7 @@ def list_members(
 ):
     use_case = GetAllMembers(member_repo)
     members = use_case.execute()
-    return [MemberResponse(id=m.id, name=m.name) for m in members]
+    return [MemberResponse(id=m.id, name=m.name, color=m.color) for m in members]
 
 
 @router.post("", response_model=MemberResponse, status_code=201)
@@ -33,7 +33,23 @@ def create_member(
 ):
     use_case = CreateMember(member_repo)
     member = use_case.execute(name=request.name)
-    return MemberResponse(id=member.id, name=member.name)
+    return MemberResponse(id=member.id, name=member.name, color=member.color)
+
+
+@router.put("/{member_id}", response_model=MemberResponse)
+def update_member(
+    member_id: int,
+    request: MemberUpdateRequest,
+    current_user: HouseholdMember = Depends(get_current_user),
+    member_repo: SQLiteMemberRepository = Depends(get_member_repo),
+):
+    member = member_repo.get_by_id(member_id)
+    if member is None:
+        raise HTTPException(status_code=404, detail="Member not found")
+    if request.color is not None:
+        member.color = request.color
+    member_repo.save(member)
+    return MemberResponse(id=member.id, name=member.name, color=member.color)
 
 
 @router.delete("/{member_id}", status_code=204)

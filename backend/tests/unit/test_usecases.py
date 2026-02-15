@@ -10,9 +10,11 @@ from src.domain import (
     HouseholdMember,
     TaskCompletion,
     Note,
+    WeeklyRoutine,
     RecurrencePattern,
     RecurrenceType,
     Urgency,
+    TimeOfDay,
 )
 from src.application import (
     CreateTask,
@@ -25,6 +27,10 @@ from src.application import (
     GetAllMembers,
     GetNote,
     UpdateNote,
+    GetAllRoutines,
+    CreateRoutineBatch,
+    UpdateRoutineAssignment,
+    DeleteRoutine,
 )
 
 
@@ -371,3 +377,120 @@ class TestUpdateNote:
 
         assert result.content == ""
         mock_repo.save.assert_called_once()
+
+
+class TestGetAllRoutines:
+    def test_returns_all_routines(self):
+        routines = [
+            WeeklyRoutine(id=1, name="School", day_of_week=0, time_of_day=TimeOfDay.MORNING),
+            WeeklyRoutine(id=2, name="Dinner", day_of_week=0, time_of_day=TimeOfDay.EVENING),
+        ]
+        mock_repo = MagicMock()
+        mock_repo.get_all.return_value = routines
+
+        use_case = GetAllRoutines(mock_repo)
+        result = use_case.execute()
+
+        assert len(result) == 2
+        mock_repo.get_all.assert_called_once()
+
+
+class TestCreateRoutineBatch:
+    def test_creates_routines_for_multiple_days(self):
+        mock_repo = MagicMock()
+        # Return a routine with an id for each save call
+        mock_repo.save.side_effect = lambda r: WeeklyRoutine(
+            id=r.day_of_week + 1,
+            name=r.name,
+            day_of_week=r.day_of_week,
+            time_of_day=r.time_of_day,
+            assigned_to_id=r.assigned_to_id,
+        )
+
+        use_case = CreateRoutineBatch(mock_repo)
+        result = use_case.execute(
+            name="Dinner",
+            days_of_week=[0, 1, 2],
+            time_of_day=TimeOfDay.EVENING,
+            assigned_to_id=1,
+        )
+
+        assert len(result) == 3
+        assert mock_repo.save.call_count == 3
+        assert result[0].day_of_week == 0
+        assert result[1].day_of_week == 1
+        assert result[2].day_of_week == 2
+        assert all(r.name == "Dinner" for r in result)
+        assert all(r.assigned_to_id == 1 for r in result)
+
+    def test_creates_single_routine(self):
+        mock_repo = MagicMock()
+        mock_repo.save.return_value = WeeklyRoutine(
+            id=1,
+            name="Sleep in",
+            day_of_week=5,
+            time_of_day=TimeOfDay.MORNING,
+        )
+
+        use_case = CreateRoutineBatch(mock_repo)
+        result = use_case.execute(
+            name="Sleep in",
+            days_of_week=[5],
+            time_of_day=TimeOfDay.MORNING,
+        )
+
+        assert len(result) == 1
+        mock_repo.save.assert_called_once()
+
+
+class TestUpdateRoutineAssignment:
+    def test_assigns_member_to_routine(self):
+        routine = WeeklyRoutine(
+            id=1, name="School", day_of_week=0, time_of_day=TimeOfDay.MORNING
+        )
+        mock_repo = MagicMock()
+        mock_repo.get_by_id.return_value = routine
+        mock_repo.save.return_value = routine
+
+        use_case = UpdateRoutineAssignment(mock_repo)
+        result = use_case.execute(routine_id=1, assigned_to_id=2)
+
+        assert result is not None
+        assert result.assigned_to_id == 2
+        mock_repo.save.assert_called_once()
+
+    def test_clears_assignment(self):
+        routine = WeeklyRoutine(
+            id=1, name="School", day_of_week=0,
+            time_of_day=TimeOfDay.MORNING, assigned_to_id=2,
+        )
+        mock_repo = MagicMock()
+        mock_repo.get_by_id.return_value = routine
+        mock_repo.save.return_value = routine
+
+        use_case = UpdateRoutineAssignment(mock_repo)
+        result = use_case.execute(routine_id=1, assigned_to_id=None)
+
+        assert result is not None
+        assert result.assigned_to_id is None
+
+    def test_returns_none_for_nonexistent_routine(self):
+        mock_repo = MagicMock()
+        mock_repo.get_by_id.return_value = None
+
+        use_case = UpdateRoutineAssignment(mock_repo)
+        result = use_case.execute(routine_id=999, assigned_to_id=1)
+
+        assert result is None
+
+
+class TestDeleteRoutine:
+    def test_deletes_routine(self):
+        mock_repo = MagicMock()
+        mock_repo.delete.return_value = True
+
+        use_case = DeleteRoutine(mock_repo)
+        result = use_case.execute(routine_id=1)
+
+        assert result is True
+        mock_repo.delete.assert_called_once_with(1)

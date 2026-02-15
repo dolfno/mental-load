@@ -1,4 +1,4 @@
-from .interfaces import TaskRepository, MemberRepository, CompletionRepository, NoteRepository
+from .interfaces import TaskRepository, MemberRepository, CompletionRepository, NoteRepository, WeeklyRoutineRepository
 from .task_usecases import (
     CreateTask,
     UpdateTask,
@@ -19,12 +19,14 @@ from .member_usecases import (
 )
 from .auth_usecases import RegisterUser, LoginUser, GetCurrentUser
 from .note_usecases import GetNote, UpdateNote
+from .routine_usecases import GetAllRoutines, CreateRoutineBatch, UpdateRoutineAssignment, DeleteRoutine
 
 __all__ = [
     "TaskRepository",
     "MemberRepository",
     "CompletionRepository",
     "NoteRepository",
+    "WeeklyRoutineRepository",
     "CreateTask",
     "UpdateTask",
     "CompleteTask",
@@ -44,4 +46,8 @@ __all__ = [
     "GetCurrentUser",
     "GetNote",
     "UpdateNote",
+    "GetAllRoutines",
+    "CreateRoutineBatch",
+    "UpdateRoutineAssignment",
+    "DeleteRoutine",
 ]

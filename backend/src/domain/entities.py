@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime, date
 
-from .value_objects import RecurrencePattern, Urgency
+from .value_objects import RecurrencePattern, Urgency, TimeOfDay
 
 
 @dataclass
@@ -24,6 +24,7 @@ class HouseholdMember:
     name: str
     email: str | None = None
     password_hash: str | None = None
+    color: str | None = None
 
 
 @dataclass
@@ -32,6 +33,16 @@ class TaskCompletion:
     task_id: int
     completed_at: datetime
     completed_by_id: int | None = None
+
+
+@dataclass
+class WeeklyRoutine:
+    id: int | None
+    name: str
+    day_of_week: int  # 0=Mon, 6=Sun
+    time_of_day: TimeOfDay
+    assigned_to_id: int | None = None
+    sort_order: int = 0
 
 
 @dataclass

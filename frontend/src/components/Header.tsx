@@ -30,6 +30,9 @@ export function Header() {
               <NavLink to="/" className={linkClass}>
                 Dashboard
               </NavLink>
+              <NavLink to="/weekplan" className={linkClass}>
+                Weekplan
+              </NavLink>
               <NavLink to="/kladblok" className={linkClass}>
                 Kladblok
               </NavLink>
