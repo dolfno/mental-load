@@ -13,6 +13,7 @@ import { WeekplanPage } from './components/WeekplanPage';
 import { LoginPage } from './components/LoginPage';
 import { RegisterPage } from './components/RegisterPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { ChatWidget } from './components/ChatWidget';
 
 function AuthenticatedApp() {
   const [members, setMembers] = useState<Member[]>([]);
@@ -103,6 +104,7 @@ function AuthenticatedApp() {
           }
         />
       </Routes>
+      <ChatWidget />
     </div>
   );
 }

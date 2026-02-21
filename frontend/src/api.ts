@@ -1,4 +1,4 @@
-import type { Task, TaskCreateRequest, TaskUpdateRequest, Member, TaskCompletion, User, AuthResponse, LoginRequest, RegisterRequest, Note, NoteUpdateRequest, WeeklyRoutine, RoutineCreateRequest } from './types';
+import type { Task, TaskCreateRequest, TaskUpdateRequest, Member, TaskCompletion, User, AuthResponse, LoginRequest, RegisterRequest, Note, NoteUpdateRequest, WeeklyRoutine, RoutineCreateRequest, ChatMessage, ChatSendRequest, ChatResponse } from './types';
 
 // Use VITE_API_URL for production deployment, defaults to /api for local development
 const BASE_URL = import.meta.env.VITE_API_URL || '/api';
@@ -176,6 +176,21 @@ export const api = {
 
     delete: (routineId: number) =>
       fetchJSON<void>(`${BASE_URL}/routines/${routineId}`, {
+        method: 'DELETE',
+      }),
+  },
+
+  chat: {
+    send: (data: ChatSendRequest) =>
+      fetchJSON<ChatResponse>(`${BASE_URL}/chat`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    history: () => fetchJSON<ChatMessage[]>(`${BASE_URL}/chat/history`),
+
+    clear: () =>
+      fetchJSON<void>(`${BASE_URL}/chat/history`, {
         method: 'DELETE',
       }),
   },

@@ -120,3 +120,20 @@ export interface RoutineCreateRequest {
   time_of_day: TimeOfDay;
   assigned_to_id?: number | null;
 }
+
+// Chat types
+export interface ChatMessage {
+  id: number;
+  role: 'user' | 'assistant';
+  content: string;
+  created_at: string;
+}
+
+export interface ChatSendRequest {
+  message: string;
+}
+
+export interface ChatResponse {
+  user_message: ChatMessage;
+  assistant_message: ChatMessage;
+}
