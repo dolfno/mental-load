@@ -140,23 +140,48 @@ Base URL: `/api`. All endpoints except `/health` and `/api/auth/*` require JWT a
 - `GET /api/chat/history` - Get chat message history
 - `DELETE /api/chat/history` - Clear chat history
 
+## Hosting / Deployment
+
+- **Backend**: Render (free tier) — keep-alive cron pings `https://api.jorindeendolf.nl/health` every 14 min
+- **Database**: Turso (production), local SQLite for dev/tests
+- **Frontend**: Strato (SFTP deploy to `/aivin_html/`)
+
+CI/CD via GitHub Actions (`.github/workflows/`):
+- `deploy-frontend.yml` — builds and SFTPs frontend on push to `main`
+- `keep-alive.yml` — pings Render health endpoint every 14 minutes
+
 ## Environment Variables
 
 ### Backend (`.env` in `/backend`)
 ```bash
-JWT_SECRET_KEY=your-secret-key              # JWT signing key (required for auth)
-ADMIN_API_KEY=your-admin-api-key            # Admin user creation key
+# Auth (required)
+JWT_SECRET_KEY=your-secret-key              # JWT signing key — generate with: openssl rand -hex 32
+ADMIN_API_KEY=your-api-key-here             # Key for POST /api/admin/users (X-Admin-Api-Key header)
 CORS_ORIGINS=http://localhost:5173          # Comma-separated allowed origins
 
-# Database (optional - uses local SQLite if not set)
-TURSO_DATABASE_URL=libsql://xxxx.turso.io   # Turso database URL for production
-TURSO_AUTH_TOKEN=your-turso-token           # Turso auth token
+# Auto-create admin user on startup (optional)
+ADMIN_EMAIL=admin@example.com               # If set and user doesn't exist, creates admin on startup
+ADMIN_PASSWORD=your-secure-password
+ADMIN_NAME=Admin
+
+# Database (optional — uses local SQLite if not set)
+TURSO_DATABASE_URL=libsql://your-db.turso.io
+TURSO_AUTH_TOKEN=your-turso-token
 
 # AI Chat (required for chat feature)
 LLM_API_KEY=your-api-key                    # API key for OpenAI-compatible LLM provider
 LLM_BASE_URL=https://api.openai.com/v1     # Base URL for LLM API (optional, defaults to OpenAI)
 LLM_MODEL=gpt-4o-mini                      # Model name (optional, defaults to gpt-4o-mini)
 ```
+
+### Frontend (build-time)
+```bash
+VITE_API_URL=https://api.jorindeendolf.nl   # Backend URL for production (defaults to /api for local dev)
+```
+
+### GitHub Actions Secrets
+`SFTP_HOST`, `SFTP_USERNAME`, `SFTP_PASSWORD` — for Strato frontend deploy
+`VITE_API_URL` — backend URL injected at build time
 
 ## Workflow
 
